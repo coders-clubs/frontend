@@ -1,97 +1,87 @@
-// Form behavior scripts
-
 function setMode(mode) {
     const form = document.getElementById('admissionForm');
-    const modifyBar = document.getElementById('modify-search-bar');
     
     if (mode === 'add') {
         form.reset();
-        document.getElementById('receipt_no').value = window.INIT_RECEIPT_NO || '';
-        document.getElementById('application_no').value = window.INIT_APP_NO || '';
+        document.getElementById('receipt_no').value = '(Auto-generated on Save)';
+        document.getElementById('application_no').value = '(Auto-generated on Save)';
         document.getElementById('action_type').value = 'save';
         document.getElementById('existing_id').value = '';
-        document.getElementById('saveBtn').innerText = 'Save';
-        modifyBar.style.display = 'none';
-        
-        // Ensure readonly is applied correctly on key fields
-        document.getElementById('receipt_no').readOnly = true;
-        document.getElementById('application_no').readOnly = true;
-
+        document.getElementById('saveBtn').innerText = 'SUBMIT REGISTRATION';
+        alert("Form cleared. You can now enter a new student record.");
     } else if (mode === 'delete') {
-        if (!document.getElementById('existing_id').value) {
-            alert('Please modify to fetch a record first before deleting!');
+        const id = document.getElementById('existing_id').value;
+        if (!id) {
+            alert("Please search and fetch a record first before deleting.");
             return;
         }
-        if(confirm("Are you sure you want to delete this record?")) {
-            document.getElementById('action_type').value = 'delete';
-            form.submit();
+        if (confirm("Are you sure you want to PERMANENTLY delete this student record?")) {
+            const formData = new FormData();
+            formData.append('action_type', 'delete');
+            formData.append('existing_id', id);
+            
+            fetch('admission_handler.php', {
+                method: 'POST',
+                body: formData
+            }).then(() => {
+                alert("Record deleted successfully.");
+                window.location.reload();
+            });
         }
     }
 }
 
 function enableModify() {
-    const modifyBar = document.getElementById('modify-search-bar');
-    modifyBar.style.display = 'block';
+    const bar = document.getElementById('modify-search-bar');
+    if (bar) {
+        bar.style.display = (bar.style.display === 'none') ? 'block' : 'none';
+        if (bar.style.display === 'block') {
+            document.getElementById('search_app_no').focus();
+        }
+    }
 }
 
 function fetchRecord() {
-    const appNo = document.getElementById('search_app_no').value.trim();
-    if (!appNo) {
-        alert("Please enter an Application No");
-        return;
-    }
+    const searchVal = document.getElementById('search_app_no').value.trim();
+    if (!searchVal) return alert("Please enter a Receipt No or Application No to search.");
 
-    // Fetch via API
-    fetch(`admission_fetch.php?application_no=${appNo}`)
-        .then(response => response.json())
+    fetch(`core/admission_fetch.php?search=${searchVal}`)
+        .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
                 const r = data.record;
-                // Basic
-                document.getElementById('existing_id').value = r.id;
-                document.getElementById('receipt_no').value = r.receipt_no;
-                document.getElementById('admission_type').value = r.admission_type;
-                
-                // Personal
-                document.getElementById('student_name').value = r.student_name;
-                document.getElementById('gender').value = r.gender;
-                document.getElementById('date_of_birth').value = r.date_of_birth;
-                document.getElementById('father_name').value = r.father_name;
-                document.getElementById('mother_name').value = r.mother_name;
-                document.getElementById('address').value = r.address;
-                document.getElementById('city').value = r.city;
-                document.getElementById('pincode').value = r.pincode;
-                document.getElementById('cell_1').value = r.cell_1;
-                document.getElementById('cell_2').value = r.cell_2;
-                document.getElementById('community').value = r.community;
-                document.getElementById('religion').value = r.religion;
-                document.getElementById('caste').value = r.caste;
-                document.getElementById('father_occupation').value = r.father_occupation;
-                document.getElementById('mother_occupation').value = r.mother_occupation;
-
-                // Academic
-                document.getElementById('application_no').value = r.application_no;
-                document.getElementById('department').value = r.department;
-                document.getElementById('quota').value = r.quota;
-                document.getElementById('concession').value = r.concession;
-
-                // Admission
-                document.getElementById('admission_no').value = r.admission_no;
-                document.getElementById('date_of_joining').value = r.date_of_joining;
-                document.getElementById('bus_stop').value = r.bus_stop;
-                document.getElementById('bus_route_no').value = r.bus_route_no;
-                document.getElementById('degree').value = r.degree;
-                document.getElementById('hostel').value = r.hostel;
-
                 document.getElementById('action_type').value = 'update';
-                document.getElementById('saveBtn').innerText = 'Update';
+                document.getElementById('existing_id').value = r.id;
+                document.getElementById('saveBtn').innerText = 'UPDATE REGISTRATION';
                 
+                // Map all fields
+                const fields = [
+                    'receipt_no', 'admission_type', 'student_name', 'gender', 'father_name', 
+                    'mother_name', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 
+                    'religion', 'community', 'caste', 'father_occupation', 'mother_occupation',
+                    'application_no', 'department', 'quota', 'concession', 'admission_no', 
+                    'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no'
+                ];
+                
+                fields.forEach(f => {
+                    const el = document.getElementById(f);
+                    if (el) el.value = r[f] || '';
+                });
+                
+                alert("Student data fetched successfully. You can now modify and update.");
             } else {
-                alert(data.message || 'Record not found.');
+                alert("No record found for: " + searchVal);
             }
         })
         .catch(err => {
-            console.error(err);
-            alert('Failed to fetch record.');
+            console.error("Fetch Error:", err);
+            alert("Error connecting to server. Please try again.");
         });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.AUTO_FETCH && window.AUTO_FETCH !== "") {
+        document.getElementById('search_app_no').value = window.AUTO_FETCH;
+        fetchRecord();
+    }
+});
