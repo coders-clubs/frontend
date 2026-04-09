@@ -1,0 +1,212 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+header {
+    background-color: #2a5298;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+header .user-info {
+    font-size: 16px;
+}
+
+header a.logout-btn {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    background-color: #1e3c72;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+header a.logout-btn:hover {
+    background-color: #1a3360;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.dashboard-cards {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 300px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    color: #2a5298;
+}
+
+.card p {
+    color: #666;
+    margin: 0;
+}
+
+/* Base Form Styles */
+.form-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+}
+
+.form-section h3 {
+    color: #2a5298;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px dotted #ccc;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.form-group input[readonly] {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    transition: background 0.3s;
+}
+
+.btn-primary { background-color: #2a5298; }
+.btn-primary:hover { background-color: #1e3c72; }
+
+.btn-success { background-color: #28a745; }
+.btn-success:hover { background-color: #218838; }
+
+.btn-danger { background-color: #dc3545; }
+.btn-danger:hover { background-color: #c82333; }
+
+.btn-warning { background-color: #ffc107; color: #212529; }
+.btn-warning:hover { background-color: #e0a800; }
+
+.btn-secondary { background-color: #6c757d; }
+.btn-secondary:hover { background-color: #5a6268; }
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 16px;
+    text-align: left;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    background: white;
+}
+
+.styled-table thead tr {
+    background-color: #2a5298;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #2a5298;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f3f3f3;
+}
+
+@media print {
+    body { background: white; }
+    header, .form-actions, .no-print { display: none !important; }
+    .form-card { box-shadow: none; padding: 0; }
+    .form-group input, .form-group select, .form-group textarea {
+        border: none;
+        border-bottom: 1px solid #000;
+        border-radius: 0;
+        background: transparent !important;
+        pointer-events: none;
+    }
+}
