@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("DELETE FROM admissions WHERE id = ? AND faculty_email = ?");
             $stmt->execute([$id, $faculty_email]);
             $pdo->commit();
-            header("Location: dashboard.php?msg=Record deleted successfully.");
+            header("Location: ../dashboard.php?msg=Record deleted successfully.");
             exit;
         }
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $pdo->commit();
-            header("Location: admission_form.php?msg=New admission record created: " . $receipt_no);
+            header("Location: ../print_receipt.php?receipt_no=" . $receipt_no);
             exit;
 
         } elseif ($action === 'update_advanced' || $action === 'update') {
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $pdo->commit();
-            header("Location: " . ($action === 'update_advanced' ? 'admission_details.php' : 'admission_form.php') . "?msg=Record updated successfully.");
+            header("Location: ../" . ($action === 'update_advanced' ? 'admission_registry.php' : 'admission_entry.php') . "?msg=Record updated successfully.");
             exit;
         }
 

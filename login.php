@@ -79,7 +79,6 @@ if (isset($_SESSION['faculty_email'])) {
     </style>
 </head>
 <body>
-
 <div class="login-card">
     <h2>Faculty Login</h2>
     <?php if (isset($_SESSION['login_error'])): ?>
@@ -98,6 +97,5 @@ if (isset($_SESSION['faculty_email'])) {
         <button type="submit" class="btn-primary">Sign In</button>
     </form>
 </div>
-
 </body>
 </html>

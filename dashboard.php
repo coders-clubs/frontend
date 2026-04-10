@@ -36,7 +36,6 @@ require_login();
     </style>
 </head>
 <body class="designer-animate">
-
 <header>
     <div class="branding-center" style="flex: 1; flex-direction: row; gap: 30px; justify-content: center;">
         <img src="assets/logo.png" alt="NSCET" style="height: 120px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
@@ -46,36 +45,31 @@ require_login();
         </div>
     </div>
 </header>
-
 <div class="dash-container">
     <div class="hero-section stagger-1">
         <h1>Admission center</h1>
         <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 20px auto;">Welcome to the high-performance orchestration portal for academic excellence and student registration.</p>
     </div>
-
     <div class="elite-grid">
         <a href="admission_entry.php" class="elite-card stagger-2">
-            <i>💎</i>
+            <i></i>
             <h3>Admission Entry</h3>
             <p>Initialize student profiles with concurrent-safe sequential processing.</p>
             <div class="card-accent">INITIATE FLOW →</div>
         </a>
-
         <a href="admission_registry.php" class="elite-card stagger-3">
-            <i>🎯</i>
+            <i></i>
             <h3>Admision Registry</h3>
             <p>Master command for marks entry, financial records, and institutional verification.</p>
             <div class="card-accent">FINALIZATION →</div>
         </a>
-
         <a href="application_records.php" class="elite-card stagger-4">
-            <i>📊</i>
+            <i></i>
             <h3>My applicants</h3>
             <p>Full audit trail of all applications with deep-link modification capabilities.</p>
             <div class="card-accent">VIEW ARCHIVE →</div>
         </a>
     </div>
-
     <div class="stat-banner stagger-5">
         <div class="stat-item">
             <span class="stat-val">ACTIVE</span>
@@ -90,6 +84,5 @@ require_login();
         </div>
     </div>
 </div>
-
 </body>
 </html>

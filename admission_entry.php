@@ -175,11 +175,11 @@ require_login();
                         <label>Academic Department *</label>
                         <select name="department" id="department" required>
                             <option value="">Select Branch</option>
-                            <option value="AI&DS">AI&DS Engineering</option>
+                            <option value="AI&DS">AI&DS</option>
                             <option value="CSE">Computer Science & Engg</option>
                             <option value="IT">Information Technology</option>
-                            <option value="ECE">Electronics & Communication</option>
-                            <option value="EEE">Electrical & Electronics</option>
+                            <option value="ECE">Electronics & Communication Engineering</option>
+                            <option value="EEE">Electrical & Electronics Engineering</option>
                             <option value="MECHANICAL">Mechanical Engineering</option>
                             <option value="CIVIL">Civil Engineering</option>
                         </select>
@@ -202,11 +202,43 @@ require_login();
                 </div>
             </div>
 
+            <!-- Section 4 -->
+            <div class="section-wrapper">
+                <div class="section-label">
+                    <div class="section-number">04</div>
+                    <div class="section-title">Enquiry Fee Payment</div>
+                </div>
+                
+                <div class="input-row" style="align-items: center; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div class="field-box" style="flex: 1;">
+                        <label>Application Fee Amount</label>
+                        <input type="text" value="Rs. 300.00" readonly style="font-weight: 800; color: #10b981; background: #ecfdf5; border-color: #a7f3d0;">
+                    </div>
+                    
+                    <div class="field-box" style="flex: 2;">
+                        <label>Payment Mode *</label>
+                        <div style="display: flex; gap: 30px; padding: 10px 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
+                                <input type="radio" name="bill_type" value="Cash" checked onclick="toggleRef(false)" style="width: 20px; height: 20px;"> CASH
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
+                                <input type="radio" name="bill_type" value="Online" onclick="toggleRef(true)" style="width: 20px; height: 20px;"> ONLINE / UPI
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field-box" id="ref_container" style="flex: 2; display: none;">
+                        <label>Transaction Ref No *</label>
+                        <input type="text" name="reference" id="reference" placeholder="Enter Ref / UTR No">
+                    </div>
+                </div>
+            </div>
+
             <div class="action-strip no-print">
                 <button type="button" class="btn-designer btn-ghost" onclick="setMode('add')">ADD NEW</button>
                 <button type="button" class="btn-designer btn-accent-designer" onclick="enableModify()">SEARCH / MODIFY</button>
                 <button type="submit" class="btn-designer btn-primary-designer" id="saveBtn">SUBMIT REGISTRATION</button>
-                <button type="button" class="btn-designer btn-success-designer" onclick="window.print()">PRINT RECORD</button>
+                <button type="button" class="btn-designer btn-success-designer" onclick="printOfficialReceipt()">PRINT RECEIPT</button>
             </div>
 
             <div id="modify-search-bar" style="display:none; margin-top:40px; border-top: 2px dashed #e2e8f0; padding-top: 40px;" class="no-print">
@@ -224,6 +256,18 @@ require_login();
 
 <script>
     const AUTO_FETCH = "<?= htmlspecialchars($_GET['fetch'] ?? '') ?>";
+    function printOfficialReceipt() {
+        const receiptNo = document.getElementById('receipt_no').value;
+        if (!receiptNo || receiptNo.includes('Auto-generated')) {
+            alert("Please submit the registration first to generate a Receipt No.");
+            return;
+        }
+        window.open('print_receipt.php?receipt_no=' + receiptNo, '_blank');
+    }
+    function toggleRef(show) {
+        document.getElementById('ref_container').style.display = show ? 'block' : 'none';
+        if(!show) document.getElementById('reference').value = '';
+    }
 </script>
 <script src="assets/js/script.js"></script>
 </body>
