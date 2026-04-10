@@ -1,14 +1,15 @@
 <?php
 session_start();
 
-// Environment-Aware High-Performance Logic
-$isVercel = isset($_SERVER['VERCEL_URL']);
+// Ultra-Resilient Cloud Environment Detection
+function get_db_var($name, $default = '') {
+    return $_ENV[$name] ?? getenv($name) ?? $_SERVER[$name] ?? $default;
+}
 
-// Cloud Database Orchestration (Vercel Variables)
-$host = $_ENV['DB_HOST'] ?? '127.0.0.1';
-$db   = $_ENV['DB_NAME'] ?? 'nscet_admission_2026';
-$user = $_ENV['DB_USER'] ?? 'root';
-$pass = $_ENV['DB_PASS'] ?? '';
+$host = get_db_var('DB_HOST', '127.0.0.1');
+$db   = get_db_var('DB_NAME', 'nscet_admission_2026');
+$user = get_db_var('DB_USER', 'root');
+$pass = get_db_var('DB_PASS', '');
 $charset = 'utf8mb4';
 
 // Secure Dynamic DSN Generation
@@ -19,11 +20,13 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
+// Define $pdo as null initially to prevent "Undefined" errors
+$pdo = null;
+
 try {
      $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-     // If we are live, we need to know WHY it failed
-     die("<h1>System Connection Error</h1><p>Our academic server could not reach the database.</p><p><b>Error:</b> " . $e->getMessage() . "</p><p><i>Check your Vercel Environment Variables!</i></p>");
+     die("<h1>System Connection Error</h1><p><b>Host detected:</b> $host</p><p><b>Error:</b> " . $e->getMessage() . "</p><p><i>Verify your Vercel Environment Variables!</i></p>");
 }
 
 function require_login() {
