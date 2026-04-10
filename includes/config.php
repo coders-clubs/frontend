@@ -22,7 +22,8 @@ $options = [
 try {
      $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-     // Database might not exist; handle via setup_db.php
+     // If we are live, we need to know WHY it failed
+     die("<h1>System Connection Error</h1><p>Our academic server could not reach the database.</p><p><b>Error:</b> " . $e->getMessage() . "</p><p><i>Check your Vercel Environment Variables!</i></p>");
 }
 
 function require_login() {
