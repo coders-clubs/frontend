@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.php": {
+    "**/*.php": {
       "runtime": "vercel-php@latest"
     }
   },
@@ -8,12 +8,6 @@
     {
       "src": "/(.*)",
       "dest": "/$1"
-    }
-  ],
-  "builds": [
-    {
-      "src": "**/*.php",
-      "use": "vercel-php@latest"
     }
   ]
 }
