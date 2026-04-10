@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     admission_type = ?, student_name = ?, gender = ?, date_of_birth = ?, father_name = ?, caste = ?, 
                     state = ?, address = ?, place = ?, cell_1 = ?, reg_no = ?, department = ?, school_name = ?, 
                     percentage = ?, reference = ?, reference_name = ?, hostel = ?, uravinmurai_letter = ?, 
-                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?
+                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?, concession = ?
                     WHERE id = ? AND faculty_email = ?";
             
             $stmt = $pdo->prepare($sql);
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['fees_name'] ?? '', $_POST['amount'] ?? 0, $_POST['bill_type'] ?? 'Cash', $_POST['degree'] ?? '',
                 !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : null,
                 !empty($_POST['date_of_joining']) ? $_POST['date_of_joining'] : null,
-                $_POST['quota'] ?? 'Merit', $id, $faculty_email
+                $_POST['quota'] ?? 'Merit', $_POST['concession'] ?? '', $id, $faculty_email
             ]);
 
             if (isset($_POST['subject'])) {

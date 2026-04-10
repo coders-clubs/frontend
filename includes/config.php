@@ -1,13 +1,17 @@
 <?php
-// config.php
 session_start();
 
-$host = '127.0.0.1';
-$db   = 'college_admission';
-$user = 'root'; // default XAMPP/MySQL
-$pass = '';
+// Environment-Aware High-Performance Logic
+$isVercel = isset($_SERVER['VERCEL_URL']);
+
+// Cloud Database Orchestration (Vercel Variables)
+$host = $_ENV['DB_HOST'] ?? '127.0.0.1';
+$db   = $_ENV['DB_NAME'] ?? 'nscet_admission_2026';
+$user = $_ENV['DB_USER'] ?? 'root';
+$pass = $_ENV['DB_PASS'] ?? '';
 $charset = 'utf8mb4';
 
+// Secure Dynamic DSN Generation
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -16,23 +20,14 @@ $options = [
 ];
 
 try {
-    // Note: If you run setup_db.php, it connects without dbname first.
-    // For normal app use, this requires the db to exist.
-    // We suppress the error here so setup_db can include config for credentials.
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    if (strpos($e->getMessage(), 'Unknown database') !== false) {
-        // App will fail if trying to query, but let setup_db handle creations.
-        $pdo = null;
-    } else {
-        throw new PDOException($e->getMessage(), (int)$e->getCode());
-    }
+     $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+     // Database might not exist; handle via setup_db.php
 }
 
-// Ensure faculty is logged in (unless we're on login pages)
 function require_login() {
     if (!isset($_SESSION['faculty_email'])) {
-        header('Location: login.php');
+        header("Location: login.php");
         exit;
     }
 }

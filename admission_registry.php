@@ -177,6 +177,10 @@ require_login();
                             <div class="field-box"><label>Fees Name</label><input type="text" name="fees_name" id="fees_name"></div>
                             <div class="field-box"><label>Amount</label><input type="number" name="amount" id="amount"></div>
                             <div class="field-box">
+                                <label>Concession Note / Amt</label>
+                                <input type="text" name="concession" id="concession" placeholder="e.g. Merit 10% / Staff Child">
+                            </div>
+                            <div class="field-box">
                                 <label>Bill Type</label>
                                 <select name="bill_type" id="bill_type"><option value="Cash">Cash</option><option value="Online">Online</option><option value="Cheque">Cheque</option></select>
                             </div>
@@ -231,7 +235,7 @@ require_login();
                     const marks = data.marks || [];
                     
                     document.getElementById('advanced_id').value = r.id;
-                    const fields = ['application_no', 'receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date'];
+                    const fields = ['application_no', 'receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession'];
                     fields.forEach(f => {
                          const el = document.getElementById(f);
                          if(el) el.value = r[f] || '';
