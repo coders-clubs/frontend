@@ -95,6 +95,10 @@ if (isset($_SESSION['faculty_email'])) {
             <input type="password" id="password" name="password" required placeholder="••••••••">
         </div>
         <button type="submit" class="btn-primary">Sign In</button>
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 14px;">
+            <a href="forgot_password.php" style="color: #2a5298; text-decoration: none;">Forgot Password?</a>
+            <a href="register.php" style="color: #2a5298; text-decoration: none; font-weight: bold;">Create Account</a>
+        </div>
     </form>
 </div>
 </body>

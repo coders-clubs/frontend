@@ -2,7 +2,7 @@
 session_start();
 
 $host = '127.0.0.1';
-$db   = 'college_admission';
+$db   = 'nscet_admission';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';

@@ -1,5 +1,5 @@
 <?php
-require 'includes/config.php';
+require 'connection/config.php';
 require_login();
 ?>
 <!DOCTYPE html>
@@ -50,6 +50,37 @@ require_login();
         <h1>Admission center</h1>
         <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 20px auto;">Welcome to the high-performance orchestration portal for academic excellence and student registration.</p>
     </div>
+    <?php if (!isset($_SESSION['selected_center'])): ?>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: var(--brand-navy);">Select Your Center to Proceed</h2>
+    </div>
+    <div class="elite-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 800px; margin: 0 auto;">
+    <?php
+    $centers = [
+        'uravinmurai_office' => 'Uravinmurai Office',
+        'tmhnu' => 'TMHNU',
+        'main_campus' => 'Main Campus',
+        'south_branch' => 'South Branch'
+    ];
+    $delay = 1;
+    foreach($centers as $id => $name):
+        $delay++;
+    ?>
+        <a href="select_center.php?id=<?= $id ?>" class="elite-card stagger-<?= $delay ?>" style="align-items: center; text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 15px; color: #2a5298;">🏬</div>
+            <h3><?= htmlspecialchars($name) ?></h3>
+            <div class="card-accent" style="margin-top: 20px;">ENTER PORTAL →</div>
+        </a>
+    <?php endforeach; ?>
+    </div>
+    <?php else: ?>
+    <div style="text-align: center; margin-bottom: 40px; background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; display: inline-block; margin-left: 50%; transform: translateX(-50%);">
+        <span style="color: #64748b; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Active Center</span><br>
+        <strong style="color: var(--brand-navy); font-size: 24px;"><?= htmlspecialchars($_SESSION['selected_center_name']) ?></strong>
+        <br>
+        <a href="select_center.php?clear=1" style="display: inline-block; margin-top: 10px; color: #e11d48; text-decoration: none; font-size: 14px; font-weight: bold; padding: 5px 15px; border-radius: 20px; background: #ffe4e6;">Change Center</a>
+    </div>
+
     <div class="elite-grid">
         <a href="admission_entry.php" class="elite-card stagger-2">
             <i></i>
@@ -70,6 +101,7 @@ require_login();
             <div class="card-accent">VIEW ARCHIVE →</div>
         </a>
     </div>
+    <?php endif; ?>
     <div class="stat-banner stagger-5">
         <div class="stat-item">
             <span class="stat-val">ACTIVE</span>

@@ -1,5 +1,5 @@
 <?php
-require '../includes/config.php';
+require '../connection/config.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

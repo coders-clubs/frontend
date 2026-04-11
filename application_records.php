@@ -1,5 +1,5 @@
 <?php
-require 'includes/config.php';
+require 'connection/config.php';
 require_login();
 
 $faculty_email = $_SESSION['faculty_email'];

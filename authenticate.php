@@ -1,5 +1,5 @@
 <?php
-require 'includes/config.php';
+require 'connection/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
