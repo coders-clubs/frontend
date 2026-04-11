@@ -2,7 +2,7 @@
 session_start();
 
 $host = '127.0.0.1';
-$db   = 'nscet_admission';
+$db   = 'nscet_admission_2026';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -24,6 +24,17 @@ function require_login() {
     if (!isset($_SESSION['faculty_email'])) {
         header("Location: login.php");
         exit;
+    }
+}
+
+function is_admin() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
+function require_admin() {
+    require_login();
+    if (!is_admin()) {
+        die("Access Denied: Administrative privileges required.");
     }
 }
 ?>

@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Success
         $_SESSION['faculty_email'] = $user['email'];
         $_SESSION['faculty_name'] = $user['name'];
+        $_SESSION['role'] = $user['role']; // Store role in session
         header("Location: dashboard.php");
         exit;
     } else {

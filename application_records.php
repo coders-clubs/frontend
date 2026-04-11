@@ -3,8 +3,15 @@ require 'connection/config.php';
 require_login();
 
 $faculty_email = $_SESSION['faculty_email'];
-$stmt = $pdo->prepare("SELECT * FROM admissions WHERE faculty_email = ? ORDER BY created_at DESC");
-$stmt->execute([$faculty_email]);
+if (is_admin()) {
+    // Admin sees everything
+    $stmt = $pdo->prepare("SELECT * FROM admissions ORDER BY created_at DESC");
+    $stmt->execute();
+} else {
+    // Faculty sees only their own
+    $stmt = $pdo->prepare("SELECT * FROM admissions WHERE faculty_email = ? ORDER BY created_at DESC");
+    $stmt->execute([$faculty_email]);
+}
 $records = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -73,9 +80,32 @@ $records = $stmt->fetchAll();
     </div>
 </header>
 
-<div class="page-hero">
-    <h1>Application Registry</h1>
-    <p>Complete historical log of submitted admission forms.</p>
+    <?php if (is_admin()): ?>
+        <div style="margin-top: 30px; background: #f1f5f9; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-block; text-align: left;">
+            <h4 style="margin-top: 0; color: var(--brand-navy); margin-bottom: 15px;">Advanced Data Export</h4>
+            <form action="core/export_data.php" method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <div class="field-box" style="margin: 0;">
+                    <label style="font-size: 0.7rem;">From Date</label>
+                    <input type="date" name="startDate" style="padding: 8px; border-radius: 8px;">
+                </div>
+                <div class="field-box" style="margin: 0;">
+                    <label style="font-size: 0.7rem;">To Date</label>
+                    <input type="date" name="endDate" style="padding: 8px; border-radius: 8px;">
+                </div>
+                <div class="field-box" style="margin: 0;">
+                    <label style="font-size: 0.7rem;">Center Wise</label>
+                    <select name="center" style="padding: 8px; border-radius: 8px;">
+                        <option value="all">All Centers</option>
+                        <option value="uravinmurai_office">Uravinmurai Office</option>
+                        <option value="tmhnu">TMHNU</option>
+                        <option value="main_campus">Main Campus</option>
+                        <option value="south_branch">South Branch</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-designer btn-accent-designer" style="padding: 10px 20px; font-size: 0.8rem;">📥 DOWNLOAD CSV</button>
+            </form>
+        </div>
+    <?php endif; ?>
 </div>
 
 <div class="form-container">

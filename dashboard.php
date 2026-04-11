@@ -96,9 +96,9 @@ require_login();
         </a>
         <a href="application_records.php" class="elite-card stagger-4">
             <i></i>
-            <h3>My applicants</h3>
-            <p>Full audit trail of all applications with deep-link modification capabilities.</p>
-            <div class="card-accent">VIEW ARCHIVE →</div>
+            <h3><?= is_admin() ? 'Master Registry' : 'My applicants' ?></h3>
+            <p><?= is_admin() ? 'Global audit trail across all centers with full data export capabilities.' : 'Full audit trail of all applications with deep-link modification capabilities.' ?></p>
+            <div class="card-accent"><?= is_admin() ? 'MANAGE ALL →' : 'VIEW ARCHIVE →' ?></div>
         </a>
     </div>
     <?php endif; ?>
@@ -108,8 +108,8 @@ require_login();
             <span class="stat-label">System Status</span>
         </div>
         <div class="stat-item">
-            <span class="stat-val"><?= date('Y') ?></span>
-            <span class="stat-label">Academic Cycle</span>
+            <span class="stat-val"><?= strtoupper($_SESSION['role'] ?? 'faculty') ?></span>
+            <span class="stat-label">Your Role</span>
         </div>
         <div class="stat-item">
             <div class="nav-actions"><a href="logout.php" class="btn-designer btn-accent-designer">SECURE LOGOUT</a></div>

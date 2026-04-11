@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
+    $role = $_POST['role'] ?? 'faculty';
 
     if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
         $error = "All fields are required.";
@@ -26,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Email address is already configured. Try logging in.";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-            if ($stmt->execute([$name, $email, $hashed_password])) {
+            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+            if ($stmt->execute([$name, $email, $hashed_password, $role])) {
                 $success = "Registration successful! You can now log in.";
             } else {
                 $error = "Registration failed. Please try again.";
@@ -101,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p style="color: #666; text-align: center; font-size: 14px; margin-top: 10px;">Academic Excellence Portal</p>
     </div>
     <div class="login-right">
-        <h2>Faculty Registration</h2>
+        <h2>User Registration</h2>
         <?php if ($error): ?><div class="error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
         <?php if ($success): ?><div class="success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
         <form action="register.php" method="POST">
@@ -120,6 +121,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="confirm_password">Confirm Password</label>
                 <input type="password" id="confirm_password" name="confirm_password" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label for="role">Account Type</label>
+                <select id="role" name="role" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+                    <option value="faculty">Faculty</option>
+                    <option value="admin">Administrator</option>
+                </select>
             </div>
             <button type="submit" class="btn-primary">Register</button>
             <div>

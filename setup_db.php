@@ -53,6 +53,7 @@ try {
         amount DECIMAL(10,2),
         bill_type VARCHAR(20) DEFAULT 'Cash',
         faculty_email VARCHAR(100),
+        center VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -73,6 +74,7 @@ try {
         name VARCHAR(100),
         email VARCHAR(100) UNIQUE,
         password VARCHAR(255),
+        role ENUM('admin', 'faculty') DEFAULT 'faculty',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -82,7 +84,7 @@ try {
     $check->execute([$admin_email]);
     if (!$check->fetch()) {
         $hashed_pass = password_hash('nscet2026', PASSWORD_DEFAULT);
-        $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)")
+        $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')")
             ->execute(['NSCET Admin', $admin_email, $hashed_pass]);
         $seeded = true;
     } else {
