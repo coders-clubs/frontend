@@ -1,14 +1,10 @@
 <?php
 session_start();
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 
-$centers = [
-    'uravinmurai_office' => 'Uravinmurai Office',
-    'tmhnu' => 'TMHNU',
-    'main_campus' => 'Main Campus',
-    'south_branch' => 'South Branch'
-];
+global $centers_list;
+$centers = $centers_list;
 
 if (isset($_GET['id']) && array_key_exists($_GET['id'], $centers)) {
     $_SESSION['selected_center'] = $_GET['id'];

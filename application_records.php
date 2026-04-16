@@ -1,14 +1,32 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 
 $faculty_email = $_SESSION['faculty_email'];
+$faculties = [];
+
+// Filtering parameters
+$startDate = $_GET['startDate'] ?? '';
+$endDate = $_GET['endDate'] ?? '';
+$selCenter = $_GET['center'] ?? 'all';
+$selFaculty = $_GET['faculty'] ?? 'all';
+
 if (is_admin()) {
-    // Admin sees everything
-    $stmt = $pdo->prepare("SELECT * FROM admissions ORDER BY created_at DESC");
-    $stmt->execute();
+    $fStmt = $pdo->query("SELECT DISTINCT faculty_email FROM admissions");
+    $faculties = $fStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $query = "SELECT * FROM admissions WHERE 1=1";
+    $params = [];
+
+    if (!empty($startDate)) { $query .= " AND DATE(created_at) >= ?"; $params[] = $startDate; }
+    if (!empty($endDate)) { $query .= " AND DATE(created_at) <= ?"; $params[] = $endDate; }
+    if ($selCenter !== 'all') { $query .= " AND center = ?"; $params[] = $selCenter; }
+    if ($selFaculty !== 'all') { $query .= " AND faculty_email = ?"; $params[] = $selFaculty; }
+
+    $query .= " ORDER BY created_at DESC";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
 } else {
-    // Faculty sees only their own
     $stmt = $pdo->prepare("SELECT * FROM admissions WHERE faculty_email = ? ORDER BY created_at DESC");
     $stmt->execute([$faculty_email]);
 }
@@ -81,30 +99,53 @@ $records = $stmt->fetchAll();
 </header>
 
     <?php if (is_admin()): ?>
-        <div style="margin-top: 30px; background: #f1f5f9; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-block; text-align: left;">
-            <h4 style="margin-top: 0; color: var(--brand-navy); margin-bottom: 15px;">Advanced Data Export</h4>
-            <form action="core/export_data.php" method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
-                <div class="field-box" style="margin: 0;">
-                    <label style="font-size: 0.7rem;">From Date</label>
-                    <input type="date" name="startDate" style="padding: 8px; border-radius: 8px;">
+        <div style="margin-top: 30px; background: #fff; padding: 25px; border-radius: var(--radius-md); border: 1px solid #e2e8f0; box-shadow: var(--shadow-premium);">
+            <div class="section-label" style="margin-bottom: 20px;">
+                <div class="section-number">🎯</div>
+                <div class="section-title">Record Intelligence & Export</div>
+            </div>
+            <form id="filterForm" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; align-items: flex-end;">
+                <div class="field-box">
+                    <label>From Date</label>
+                    <input type="date" name="startDate" value="<?= htmlspecialchars($startDate) ?>" onchange="this.form.submit()">
                 </div>
-                <div class="field-box" style="margin: 0;">
-                    <label style="font-size: 0.7rem;">To Date</label>
-                    <input type="date" name="endDate" style="padding: 8px; border-radius: 8px;">
+                <div class="field-box">
+                    <label>To Date</label>
+                    <input type="date" name="endDate" value="<?= htmlspecialchars($endDate) ?>" onchange="this.form.submit()">
                 </div>
-                <div class="field-box" style="margin: 0;">
-                    <label style="font-size: 0.7rem;">Center Wise</label>
-                    <select name="center" style="padding: 8px; border-radius: 8px;">
+                <div class="field-box">
+                    <label>Admission Center</label>
+                    <select name="center" onchange="this.form.submit()">
                         <option value="all">All Centers</option>
-                        <option value="uravinmurai_office">Uravinmurai Office</option>
-                        <option value="tmhnu">TMHNU</option>
-                        <option value="main_campus">Main Campus</option>
-                        <option value="south_branch">South Branch</option>
+                        <?php foreach($centers_list as $cid => $cname): ?>
+                            <option value="<?= $cid ?>" <?= $selCenter == $cid ? 'selected' : '' ?>><?= htmlspecialchars($cname) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
-                <button type="submit" class="btn-designer btn-accent-designer" style="padding: 10px 20px; font-size: 0.8rem;">📥 DOWNLOAD CSV</button>
+                <div class="field-box">
+                    <label>Faculty / Staff</label>
+                    <select name="faculty" onchange="this.form.submit()">
+                        <option value="all">All Staff</option>
+                        <?php foreach($faculties as $f): ?>
+                            <option value="<?= htmlspecialchars($f) ?>" <?= $selFaculty == $f ? 'selected' : '' ?>><?= htmlspecialchars($f) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" onclick="exportData()" class="btn-designer btn-accent-designer" style="width: 100%; height: 38px;">📥 DOWNLOAD CSV</button>
+                </div>
             </form>
         </div>
+
+        <script>
+            function exportData() {
+                const form = document.getElementById('filterForm');
+                const originalAction = form.action;
+                form.action = 'core/export_data.php';
+                form.submit();
+                form.action = originalAction; // Reset for future filters
+            }
+        </script>
     <?php endif; ?>
 </div>
 
@@ -128,6 +169,7 @@ $records = $stmt->fetchAll();
                         <th>Receipt No</th>
                         <th>Student Name</th>
                         <th>Program / Dept</th>
+                        <th>Admission Center</th>
                         <th>Date of Joining</th>
                         <th>Actions</th>
                     </tr>
@@ -138,6 +180,9 @@ $records = $stmt->fetchAll();
                             <td><?= htmlspecialchars((string)($r['receipt_no'] ?? '')) ?></td>
                             <td><?= htmlspecialchars((string)($r['student_name'] ?? '')) ?></td>
                             <td><span class="badge-dept"><?= htmlspecialchars((string)($r['department'] ?? '')) ?></span></td>
+                            <td style="font-weight: 600; font-size: 0.8rem; color: var(--brand-navy);">
+                                <?= htmlspecialchars($centers_list[$r['center']] ?? $r['center'] ?? 'N/A') ?>
+                            </td>
                             <td style="color: #64748b;"><?= htmlspecialchars((string)($r['date_of_joining'] ?? '')) ?></td>
                             <td>
                                 <a href="admission_registry.php?fetch=<?= urlencode((string)($r['receipt_no'] ?? '')) ?>" class="btn-designer btn-primary-designer" style="padding: 8px 15px; font-size: 0.7rem;">VIEW / MODIFY</a>

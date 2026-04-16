@@ -1,10 +1,11 @@
 <?php
-require '../connection/config.php';
+require '../connection/connection.php';
 require_admin();
 
 $startDate = $_GET['startDate'] ?? '';
 $endDate = $_GET['endDate'] ?? '';
 $center = $_GET['center'] ?? '';
+$faculty = $_GET['faculty'] ?? '';
 
 $query = "SELECT * FROM admissions WHERE 1=1";
 $params = [];
@@ -21,6 +22,10 @@ if (!empty($center) && $center !== 'all') {
     $query .= " AND center = ?";
     $params[] = $center;
 }
+if (!empty($faculty) && $faculty !== 'all') {
+    $query .= " AND faculty_email = ?";
+    $params[] = $faculty;
+}
 
 $query .= " ORDER BY created_at DESC";
 
@@ -33,7 +38,7 @@ if (empty($records)) {
     exit;
 }
 
-$filename = "NSCET_Admissions_" . ($center ?: 'AllCenters') . "_" . date('Ymd_His') . ".csv";
+$filename = "NSCET_Admissions_" . ($center !== 'all' ? $center : 'AllCenters') . "_" . ($faculty !== 'all' ? $faculty : 'AllStaff') . "_" . date('Ymd_His') . ".csv";
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename=' . $filename);
 

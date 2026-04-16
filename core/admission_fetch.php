@@ -1,5 +1,5 @@
 <?php
-require '../connection/config.php';
+require '../connection/connection.php';
 require_login();
 
 if (isset($_GET['search'])) {

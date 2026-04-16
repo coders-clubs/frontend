@@ -1,5 +1,5 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 ?>
 <!DOCTYPE html>
@@ -173,7 +173,7 @@ require_login();
                                 <select name="uravinmurai_letter" id="uravinmurai_letter"><option value="No">No</option><option value="Yes">Yes</option></select>
                             </div>
                         </div>
-                        <div class="input-row">
+                         <div class="input-row" id="payment_row">
                             <div class="field-box"><label>Fees Name</label><input type="text" name="fees_name" id="fees_name"></div>
                             <div class="field-box"><label>Amount</label><input type="number" name="amount" id="amount"></div>
                             <div class="field-box">
@@ -182,7 +182,22 @@ require_login();
                             </div>
                             <div class="field-box">
                                 <label>Bill Type</label>
-                                <select name="bill_type" id="bill_type"><option value="Cash">Cash</option><option value="Online">Online</option><option value="Cheque">Cheque</option></select>
+                                <select name="bill_type" id="bill_type" onchange="toggleRegistryPayment(this.value)">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Cheque">Cheque</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="registry_online_stuff" style="display: none; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; align-items: center; gap: 20px;">
+                            <div class="field-box" style="align-items: center;">
+                                <label style="font-size: 0.6rem;">Scan to Pay</label>
+                                <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px;">
+                            </div>
+                            <div class="field-box" style="flex: 1;">
+                                <label>Transaction Ref / UTR No *</label>
+                                <input type="text" name="reference" id="reference" placeholder="Enter Reference Number">
                             </div>
                         </div>
                     </div>
@@ -275,6 +290,11 @@ require_login();
             fetchAdvancedRecord();
         }
     });
+
+    function toggleRegistryPayment(val) {
+        const container = document.getElementById('registry_online_stuff');
+        container.style.display = (val === 'Online') ? 'flex' : 'none';
+    }
 </script>
 </body>
 </html>

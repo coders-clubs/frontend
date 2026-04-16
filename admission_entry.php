@@ -1,5 +1,5 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 ?>
 <!DOCTYPE html>
@@ -215,21 +215,27 @@ require_login();
                         <input type="text" value="Rs. 300.00" readonly style="font-weight: 800; color: #10b981; background: #ecfdf5; border-color: #a7f3d0;">
                     </div>
                     
-                    <div class="field-box" style="flex: 2;">
+                    <div class="field-box" style="flex: 1;">
                         <label>Payment Mode *</label>
                         <div style="display: flex; gap: 30px; padding: 10px 0;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
-                                <input type="radio" name="bill_type" value="Cash" checked onclick="toggleRef(false)" style="width: 20px; height: 20px;"> CASH
+                                <input type="radio" name="bill_type" value="Cash" checked onclick="togglePaymentMode(false)" style="width: 20px; height: 20px;"> CASH
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
-                                <input type="radio" name="bill_type" value="Online" onclick="toggleRef(true)" style="width: 20px; height: 20px;"> ONLINE / UPI
+                                <input type="radio" name="bill_type" value="Online" onclick="togglePaymentMode(true)" style="width: 20px; height: 20px;"> ONLINE / UPI
                             </label>
                         </div>
                     </div>
 
-                    <div class="field-box" id="ref_container" style="flex: 2; display: none;">
-                        <label>Transaction Ref No *</label>
-                        <input type="text" name="reference" id="reference" placeholder="Enter Ref / UTR No">
+                    <div id="online_payment_stuff" style="display: none; flex: 2; gap: 20px; align-items: center;">
+                        <div class="field-box" style="align-items: center;">
+                            <label>Scan to Pay</label>
+                            <img src="assets/image.png" alt="Payment QR" style="height: 250px; border: 8px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;">
+                        </div>
+                        <div class="field-box" style="flex: 1;">
+                            <label>Transaction Ref No *</label>
+                            <input type="text" name="reference" id="reference" placeholder="Enter UTR / Ref No">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -264,9 +270,17 @@ require_login();
         }
         window.open('print_receipt.php?receipt_no=' + receiptNo, '_blank');
     }
-    function toggleRef(show) {
-        document.getElementById('ref_container').style.display = show ? 'block' : 'none';
-        if(!show) document.getElementById('reference').value = '';
+    function togglePaymentMode(show) {
+        const container = document.getElementById('online_payment_stuff');
+        container.style.display = show ? 'flex' : 'none';
+        
+        const refInput = document.getElementById('reference');
+        if (show) {
+            refInput.setAttribute('required', 'required');
+        } else {
+            refInput.removeAttribute('required');
+            refInput.value = '';
+        }
     }
 </script>
 <script src="assets/js/script.js"></script>

@@ -1,5 +1,5 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 
 if (!isset($_GET['receipt_no'])) {
@@ -112,6 +112,7 @@ function amountInWords($num) {
         <div class="info-item"><span class="info-label">Course</span><span class="info-value">: <?= htmlspecialchars(($r['degree'] ?? '') . " - " . ($r['department'] ?? '')) ?></span></div>
         <div class="info-item"><span class="info-label">Student Name</span><span class="info-value">: <?= htmlspecialchars($r['student_name'] ?? '') ?></span></div>
         <div class="info-item"><span class="info-label">Academic Year</span><span class="info-value">: <?= date('Y') ?> - <?= date('Y') + 4 ?></span></div>
+        <div class="info-item"><span class="info-label">Admission Center</span><span class="info-value" style="color: var(--brand-gold-bright);">: <?= htmlspecialchars($centers_list[$r['center']] ?? $r['center'] ?? 'General') ?></span></div>
     </div>
 
     <table class="fee-table">

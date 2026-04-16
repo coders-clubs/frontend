@@ -1,5 +1,24 @@
 <?php
+// Set session cookie parameters: lifetime 0 means it expires when the browser is closed.
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => false, // Set to true if using HTTPS
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
+date_default_timezone_set('Asia/Kolkata');
+
+// Add inactivity timeout (e.g., 2 hours)
+$timeout_duration = 7200; 
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout_duration)) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
+$_SESSION['last_activity'] = time();
 
 $host = '127.0.0.1';
 $db   = 'nscet_admission_2026';
@@ -37,4 +56,17 @@ function require_admin() {
         die("Access Denied: Administrative privileges required.");
     }
 }
+
+$centers_list = [
+    'nscet' => 'NSCET',
+    'uravinmurai' => 'uravinmurai',
+    'tmhnu_boys' => 'TMHNU Boys school',
+    'tmhnu_girls' => 'TMHNU girls school',
+    'bodinayakanur' => 'Bodinayakanur',
+    'usilampatti' => 'Usilampatti',
+    'andipatti' => 'Andipatti',
+    'periyakulam' => 'Periyakulam',
+    'batlagundu' => 'Batlagundu',
+    'chinnamanur' => 'Chinnamanur'
+];
 ?>

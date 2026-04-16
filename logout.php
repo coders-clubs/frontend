@@ -1,6 +1,5 @@
 <?php
-require 'connection/config.php';
-session_start();
+require 'connection/connection.php';
 session_destroy();
 header("Location: login.php");
 exit;

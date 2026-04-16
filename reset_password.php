@@ -1,5 +1,5 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 
 $error = '';
 $success = '';
@@ -9,11 +9,11 @@ if (empty($token)) {
     die("Invalid or missing token.");
 }
 
-$stmt = $pdo->prepare("SELECT id, email FROM users WHERE reset_token = ? AND reset_token_expires > NOW()");
+$stmt = $pdo->prepare("SELECT id, email, reset_token_expires FROM users WHERE reset_token = ?");
 $stmt->execute([$token]);
 $user = $stmt->fetch();
 
-if (!$user) {
+if (!$user || strtotime($user['reset_token_expires']) < time()) {
     die("This password reset token is invalid or has expired.");
 }
 

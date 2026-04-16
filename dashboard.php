@@ -1,5 +1,5 @@
 <?php
-require 'connection/config.php';
+require 'connection/connection.php';
 require_login();
 ?>
 <!DOCTYPE html>
@@ -48,20 +48,16 @@ require_login();
 <div class="dash-container">
     <div class="hero-section stagger-1">
         <h1>Admission center</h1>
-        <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 20px auto;">Welcome to the high-performance orchestration portal for academic excellence and student registration.</p>
+        <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 20px auto;">Welcome to the for academic excellence and student registration.</p>
     </div>
     <?php if (!isset($_SESSION['selected_center'])): ?>
     <div style="text-align: center; margin-bottom: 30px;">
         <h2 style="color: var(--brand-navy);">Select Your Center to Proceed</h2>
     </div>
-    <div class="elite-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 800px; margin: 0 auto;">
+    <div class="elite-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); max-width: 1000px; margin: 0 auto;">
     <?php
-    $centers = [
-        'uravinmurai_office' => 'Uravinmurai Office',
-        'tmhnu' => 'TMHNU',
-        'main_campus' => 'Main Campus',
-        'south_branch' => 'South Branch'
-    ];
+    global $centers_list;
+    $centers = $centers_list;
     $delay = 1;
     foreach($centers as $id => $name):
         $delay++;
@@ -85,7 +81,7 @@ require_login();
         <a href="admission_entry.php" class="elite-card stagger-2">
             <i></i>
             <h3>Admission Entry</h3>
-            <p>Initialize student profiles with concurrent-safe sequential processing.</p>
+            <p>Initialize student profiles.</p>
             <div class="card-accent">INITIATE FLOW →</div>
         </a>
         <a href="admission_registry.php" class="elite-card stagger-3">
