@@ -56,7 +56,11 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <div class="input-row">
                     <div class="field-box">
                         <label>Receipt No</label>
-                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required readonly style="font-weight: 800; color: var(--brand-navy);">
+                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required <?= !is_admin() ? 'readonly' : '' ?> style="font-weight: 800; color: var(--brand-navy); <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
+                    </div>
+                    <div class="field-box">
+                        <label>Receipt Date</label>
+                        <input type="text" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" required <?= !is_admin() ? 'readonly' : '' ?> style="font-weight: 700; <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                     </div>
                     <div class="field-box">
                         <label>Admission Type</label>
@@ -129,7 +133,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                     </div>
                     <div class="field-box">
                         <label>Pincode</label>
-                        <input type="text" name="pincode" id="pincode">
+                        <input type="text" name="pincode" id="pincode" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                     </div>
                 </div>
 
@@ -182,7 +186,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <div class="input-row">
                     <div class="field-box">
                         <label>Application No</label>
-                        <input type="text" name="application_no" id="application_no" value="(Auto-generated)" readonly>
+                        <input type="text" name="application_no" id="application_no" value="(Auto-generated)" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                     </div>
                     <div class="field-box">
                         <label>Degree *</label>
@@ -279,10 +283,16 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                         <div class="field-box" style="flex: 1;">
                             <label>Transaction Ref No *</label>
                             <div style="position: relative;">
-                                <input type="text" name="reference" id="reference" placeholder="Auto-fetch from scan..." required style="width: 100%; padding-right: 50px;">
+                                <input type="text" name="reference" id="reference" placeholder="Auto-fetch from scan..." required style="width: 100%; padding-right: 50px; <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>" <?= !is_admin() ? 'readonly' : '' ?>>
+                                <?php if(is_admin()): ?>
                                 <button type="button" onclick="autoFetchRef()" id="scan-btn" style="position: absolute; right: 5px; top: 5px; bottom: 5px; background: #8b5cf6; border: none; color: #fff; border-radius: 8px; cursor: pointer; padding: 0 10px; font-size: 0.7rem; font-weight: 800;">
                                   SCANNING...
                                 </button>
+                                <?php else: ?>
+                                <button type="button" onclick="autoFetchRef()" id="scan-btn" style="position: absolute; right: 5px; top: 5px; bottom: 5px; background: #8b5cf6; border: none; color: #fff; border-radius: 8px; cursor: pointer; padding: 0 10px; font-size: 0.7rem; font-weight: 800;">
+                                  SCANNING...
+                                </button>
+                                <?php endif; ?>
                             </div>
                             <p style="font-size: 0.65rem; color: #6d28d9; margin-top: 5px; font-weight: 600;" id="scan-status">Waiting for student to scan QR...</p>
                         </div>

@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
             $application_no = 'STUDENT-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 
-            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center, reg_no, school_name, percentage) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center, reg_no, school_name, percentage, receipt_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['quota'] ?? 'Merit', $_POST['hostel'] ?? 'No', $_POST['concession'] ?? '', $_POST['bus_stop'] ?? '', 
                 $_POST['bill_type'] ?? 'Cash', $_POST['reference'] ?? '',
                 $faculty_email, $_SESSION['selected_center'] ?? '',
-                $_POST['reg_no'] ?? '', $_POST['school_name'] ?? '', $_POST['percentage'] ?? 0
+                $_POST['reg_no'] ?? '', $_POST['school_name'] ?? '', $_POST['percentage'] ?? 0,
+                !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : date('Y-m-d')
             ]);
             
             $new_student_id = $pdo->lastInsertId();

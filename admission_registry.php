@@ -58,24 +58,28 @@ require_login();
                         <div class="input-row">
                             <div class="field-box">
                                 <label>Admission Type</label>
-                                <div style="display:flex; gap:20px; padding: 10px;">
+                                <div style="display:flex; gap:20px; padding: 10px; <?= !is_admin() ? 'pointer-events: none; opacity: 0.7;' : '' ?>">
                                     <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Regular" checked> Fresh Entry</label>
                                     <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Lateral"> Lateral Entry</label>
                                 </div>
                             </div>
                             <div class="field-box">
-                                <label>Application No</label>
-                                <input type="text" name="application_no" id="application_no" readonly>
+                                <label>Receipt No</label>
+                                <input type="text" name="receipt_no" id="receipt_no" readonly style="font-weight:800; color:var(--brand-navy);">
                             </div>
                         </div>
                         <div class="input-row">
                             <div class="field-box">
-                                <label>Receipt No</label>
-                                <input type="text" name="receipt_no" id="receipt_no" readonly style="font-weight:800; color:var(--brand-navy);">
+                                <label>Receipt Date</label>
+                                <input type="date" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                             </div>
                             <div class="field-box">
-                                <label>Receipt Date</label>
-                                <input type="date" name="receipt_date" id="receipt_date">
+                                <label>Degree</label>
+                                <select name="degree" id="degree" <?= !is_admin() ? 'style="pointer-events: none; background: #f1f5f9;"' : '' ?>>
+                                    <option value="B.E">B.E</option>
+                                    <option value="B.Tech">B.Tech</option>
+                                    <option value="M.E">M.E</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -84,16 +88,16 @@ require_login();
                         <div class="section-label"><div class="section-number">02</div><div class="section-title">Student Profile</div></div>
                         <div class="field-box" style="margin-bottom:20px;">
                             <label>Student Name</label>
-                            <input type="text" name="student_name" id="student_name">
+                            <input type="text" name="student_name" id="student_name" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                         </div>
                         <div class="input-row">
                             <div class="field-box">
                                 <label>Date of Birth</label>
-                                <input type="date" name="date_of_birth" id="date_of_birth">
+                                <input type="date" name="date_of_birth" id="date_of_birth" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                             </div>
                             <div class="field-box">
                                 <label>Gender</label>
-                                <select name="gender" id="gender"><option value="Male">Male</option><option value="Female">Female</option></select>
+                                <select name="gender" id="gender" <?= !is_admin() ? 'style="pointer-events: none; background: #f1f5f9;"' : '' ?>><option value="Male">Male</option><option value="Female">Female</option></select>
                             </div>
                         </div>
                         <div class="field-box" style="margin-bottom:20px;">
@@ -165,12 +169,22 @@ require_login();
                         </div>
                         <div class="input-row">
                             <div class="field-box">
-                                <label>Hostel</label>
-                                <select name="hostel" id="hostel"><option value="No">No</option><option value="Yes">Yes</option></select>
+                                <label>Quota</label>
+                                <input type="text" name="quota" id="quota" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                             </div>
                             <div class="field-box">
                                 <label>Uravinmurai Letter</label>
-                                <select name="uravinmurai_letter" id="uravinmurai_letter"><option value="No">No</option><option value="Yes">Yes</option></select>
+                                <select name="uravinmurai_letter" id="uravinmurai_letter" <?= !is_admin() ? 'style="pointer-events: none; background: #f1f5f9;"' : '' ?>><option value="No">No</option><option value="Yes">Yes</option></select>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="field-box">
+                                <label>Bus Stop</label>
+                                <input type="text" name="bus_stop" id="bus_stop">
+                            </div>
+                            <div class="field-box">
+                                <label>Hostel</label>
+                                <select name="hostel" id="hostel"><option value="No">No</option><option value="Yes">Yes</option></select>
                             </div>
                         </div>
                          <div class="input-row" id="payment_row">
@@ -250,7 +264,7 @@ require_login();
                     const marks = data.marks || [];
                     
                     document.getElementById('advanced_id').value = r.id;
-                    const fields = ['application_no', 'receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession'];
+                    const fields = ['receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop'];
                     fields.forEach(f => {
                          const el = document.getElementById(f);
                          if(el) el.value = r[f] || '';
