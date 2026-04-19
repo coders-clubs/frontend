@@ -18,21 +18,15 @@ require_login();
     </style>
 </head>
 <body class="designer-animate">
-
-<header class="no-print">
-    <div class="nav-actions"><a href="dashboard.php" class="nav-btn btn-ghost">← DASHBOARD</a></div>
-    <div class="branding-center">
-        <img src="assets/logo.png" alt="NSCET" class="logo-main" style="height: 120px; max-width: auto;">
-        <div class="college-title" style="margin-top: 10px;">NADAR SARASWATHI COLLEGE OF ENGINEERING & TECHNOLOGY</div>
-    </div>
-    <div class="nav-actions"><a href="logout.php" class="nav-btn btn-danger-soft">LOGOUT</a></div>
-</header>
-
-<div class="dash-container" style="margin-top: 40px; margin-bottom: 20px;">
-    <div class="hero-section no-print" style="margin-bottom: 40px;">
-        <h1 style="font-size: 3rem;">Registry Master</h1>
-        <p style="color: var(--text-secondary); font-weight: 600;">Verification and Final Academic Orchestration</p>
-    </div>
+<div class="app-container">
+    <?php include 'sidebar.php'; ?>
+    
+    <main class="main-content">
+        <div class="dash-container" style="margin-top: 0; margin-bottom: 20px;">
+            <div class="hero-section no-print" style="margin-bottom: 40px;">
+                <h1 style="font-size: 3rem;">Registry Master</h1>
+                <p style="color: var(--text-secondary); font-weight: 600;">Verification and Final Academic Orchestration</p>
+            </div>
 
     <div class="designer-card">
         <!-- Elite Search Bar -->
@@ -140,21 +134,28 @@ require_login();
                             </div>
                         </div>
                         
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 15px; display: block;">MARK DETAILS</label>
-                        <table class="marks-table">
-                            <thead><tr><th>Subjects</th><th>Max. Marks</th><th>Obtained</th><th>Grade</th></tr></thead>
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 15px; display: block;">MARK DETAILS</label>                        <table class="marks-table">
+                            <thead><tr><th>Subjects</th><th>Marks Obtained</th></tr></thead>
                             <tbody id="marks-body">
-                                <tr><td><input type="text" name="subject[]" value="Physics"></td><td><input type="number" name="max[]" value="100" class="max-m"></td><td><input type="number" name="obt[]" class="obt-m"></td><td><input type="text" name="grade[]"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value="Chemistry"></td><td><input type="number" name="max[]" value="100" class="max-m"></td><td><input type="number" name="obt[]" class="obt-m"></td><td><input type="text" name="grade[]"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value="Mathematics"></td><td><input type="number" name="max[]" value="100" class="max-m"></td><td><input type="number" name="obt[]" class="obt-m"></td><td><input type="text" name="grade[]"></td></tr>
+                                <tr><td><input type="text" name="subject[]" value="Mathematics"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
+                                <tr><td><input type="text" name="subject[]" value="Physics"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
+                                <tr><td><input type="text" name="subject[]" value="Chemistry"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
+                                <tr><td><input type="text" name="subject[]" value=""></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
+                                <tr><td><input type="text" name="subject[]" value=""></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
                             </tbody>
                         </table>
                         <button type="button" class="btn-designer btn-ghost" style="margin-top:10px; width:100%; border: 1px dashed #cbd5e1;" onclick="addMarkRow()">+ ADD SUBJECT</button>
 
-                        <div class="total-area">
-                            <span>AGGREGATE TOTAL</span>
-                            <span id="grand-total" style="font-size: 1.5rem; font-weight: 800;">0 / 300</span>
-                        </div>
+                        <div class="total-area" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <span>AGGREGATE TOTAL</span>
+                                <span id="grand-total" style="font-size: 1.5rem; font-weight: 800;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                                <span>ADMISSION CUTOFF (200)</span>
+                                <span id="cutoff-display" style="font-size: 1.5rem; font-weight: 800; color: var(--brand-gold);">0.00</span>
+                            </div>
+                        </div>v>
                     </div>
 
                     <div class="section-wrapper">
@@ -221,7 +222,6 @@ require_login();
             <div class="action-strip no-print">
                 <button type="button" class="btn-designer btn-ghost" onclick="window.location.reload()">ADD</button>
                 <button type="button" class="btn-designer btn-accent-designer" onclick="enableModify()">MODIFY</button>
-                <button type="button" class="btn-designer btn-danger-soft" onclick="setMode('delete')">DELETE</button>
                 <button type="submit" class="btn-designer btn-primary-designer" id="saveBtn">SAVE RECORDS</button>
                 <button type="button" class="btn-designer btn-success-designer" onclick="window.print()">PRINT</button>
             </div>
@@ -234,18 +234,26 @@ require_login();
     function addMarkRow() {
         const tbody = document.getElementById('marks-body');
         const row = document.createElement('tr');
-        row.innerHTML = '<td><input type="text" name="subject[]"></td><td><input type="number" name="max[]" value="100" class="max-m"></td><td><input type="number" name="obt[]" class="obt-m"></td><td><input type="text" name="grade[]"></td>';
+        row.innerHTML = '<td><input type="text" name="subject[]"></td><td><input type="number" name="obt[]" class="obt-m"></td>';
         tbody.appendChild(row);
         attachMarkListeners();
     }
 
     function attachMarkListeners() {
-        document.querySelectorAll('.obt-m, .max-m').forEach(input => {
+        document.querySelectorAll('.obt-m').forEach(input => {
             input.oninput = () => {
-                let totalObt = 0, totalMax = 0;
-                document.querySelectorAll('.obt-m').forEach(i => totalObt += (Number(i.value) || 0));
-                document.querySelectorAll('.max-m').forEach(i => totalMax += (Number(i.value) || 0));
-                document.getElementById('grand-total').innerText = totalObt + ' / ' + totalMax;
+                let totalObt = 0;
+                const obts = document.querySelectorAll('.obt-m');
+                obts.forEach(i => totalObt += (Number(i.value) || 0));
+                
+                document.getElementById('grand-total').innerText = totalObt;
+
+                // Cutoff: Math + Phys/2 + Chem/2
+                const m = Number(obts[0]?.value) || 0;
+                const p = Number(obts[1]?.value) || 0;
+                const c = Number(obts[2]?.value) || 0;
+                const cutoff = m + (p/2) + (c/2);
+                document.getElementById('cutoff-display').innerText = cutoff.toFixed(2);
             };
         });
     }
@@ -274,14 +282,12 @@ require_login();
                     const tbody = document.getElementById('marks-body');
                     tbody.innerHTML = ''; // Clear
                     if (marks.length === 0) {
-                        addMarkRow(); addMarkRow(); addMarkRow();
+                        addMarkRow(); addMarkRow(); addMarkRow(); addMarkRow(); addMarkRow();
                     } else {
                         marks.forEach(m => {
                             const row = document.createElement('tr');
                             row.innerHTML = `<td><input type="text" name="subject[]" value="${m.subject}"></td>
-                                             <td><input type="number" name="max[]" value="${m.max}" class="max-m"></td>
-                                             <td><input type="number" name="obt[]" value="${m.obt}" class="obt-m"></td>
-                                             <td><input type="text" name="grade[]" value="${m.grade}"></td>`;
+                                             <td><input type="number" name="obt[]" class="obt-m" value="${m.obt}"></td>`;
                             tbody.appendChild(row);
                         });
                     }
@@ -310,5 +316,7 @@ require_login();
         container.style.display = (val === 'Online') ? 'flex' : 'none';
     }
 </script>
+    </main>
+</div>
 </body>
 </html>

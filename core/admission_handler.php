@@ -47,14 +47,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $new_student_id = $pdo->lastInsertId();
 
             if (isset($_POST['subject'])) {
-                $mStmt = $pdo->prepare("INSERT INTO marks (admission_id, subject_name, max_marks, marks_obtained, grade) VALUES (?, ?, ?, ?, ?)");
-                foreach($_POST['subject'] as $idx => $subj) {
-                    if (!empty($subj)) {
-                        $mStmt->execute([
-                            $new_student_id, $subj, $_POST['max'][$idx] ?? 100, $_POST['obt'][$idx] ?? 0, $_POST['grade'][$idx] ?? ''
-                        ]);
-                    }
+                $sqlM = "INSERT INTO marks (admission_id, receipt_no, student_name, 
+                        s1_name, s1_obt, s2_name, s2_obt, s3_name, s3_obt, 
+                        s4_name, s4_obt, s5_name, s5_obt, total_obt, cutoff) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $mStmt = $pdo->prepare($sqlM);
+                
+                $totalObt = 0;
+                $sNames = []; $sObts = [];
+                for($i=0; $i<5; $i++) {
+                    $sNames[$i] = $_POST['subject'][$i] ?? '';
+                    $sObts[$i] = intval($_POST['obt'][$i] ?? 0);
+                    $totalObt += $sObts[$i];
                 }
+                
+                // Automate Cutoff (Standard: Math + Phys/2 + Chem/2)
+                $cutoff = $sObts[0] + ($sObts[1] / 2) + ($sObts[2] / 2);
+                
+                $mBatch = [$new_student_id, $receipt_no, $_POST['student_name'] ?? ''];
+                for($i=0; $i<5; $i++) {
+                    $mBatch[] = $sNames[$i]; $mBatch[] = $sObts[$i];
+                }
+                $mBatch[] = $totalObt;
+                $mBatch[] = $cutoff;
+                $mStmt->execute($mBatch);
             }
             
             $pdo->commit();
@@ -91,14 +107,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (isset($_POST['subject'])) {
                 $pdo->prepare("DELETE FROM marks WHERE admission_id = ?")->execute([$id]);
-                $mStmt = $pdo->prepare("INSERT INTO marks (admission_id, subject_name, max_marks, marks_obtained, grade) VALUES (?, ?, ?, ?, ?)");
-                foreach($_POST['subject'] as $idx => $subj) {
-                    if (!empty($subj)) {
-                        $mStmt->execute([
-                            $id, $subj, $_POST['max'][$idx] ?? 100, $_POST['obt'][$idx] ?? 0, $_POST['grade'][$idx] ?? ''
-                        ]);
-                    }
+                $sqlM = "INSERT INTO marks (admission_id, receipt_no, student_name, 
+                        s1_name, s1_obt, s2_name, s2_obt, s3_name, s3_obt, 
+                        s4_name, s4_obt, s5_name, s5_obt, total_obt, cutoff) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $mStmt = $pdo->prepare($sqlM);
+                
+                $totalObt = 0;
+                $sNames = []; $sObts = [];
+                for($i=0; $i<5; $i++) {
+                    $sNames[$i] = $_POST['subject'][$i] ?? '';
+                    $sObts[$i] = intval($_POST['obt'][$i] ?? 0);
+                    $totalObt += $sObts[$i];
                 }
+                
+                $cutoff = $sObts[0] + ($sObts[1] / 2) + ($sObts[2] / 2);
+                
+                $mBatch = [$id, $_POST['receipt_no'] ?? '', $_POST['student_name'] ?? ''];
+                for($i=0; $i<5; $i++) {
+                    $mBatch[] = $sNames[$i]; $mBatch[] = $sObts[$i];
+                }
+                $mBatch[] = $totalObt;
+                $mBatch[] = $cutoff;
+                $mStmt->execute($mBatch);
             }
 
             $pdo->commit();

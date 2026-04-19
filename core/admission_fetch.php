@@ -11,10 +11,25 @@ if (isset($_GET['search'])) {
     $record = $stmt->fetch();
 
     if ($record) {
-        // 2. Fetch associated marks from the relational table
-        $mStmt = $pdo->prepare("SELECT subject_name as subject, max_marks as max, marks_obtained as obt, grade FROM marks WHERE admission_id = ?");
+        // 2. Fetch ultra-optimized marks
+        $mStmt = $pdo->prepare("SELECT * FROM marks WHERE admission_id = ?");
         $mStmt->execute([$record['id']]);
-        $marks = $mStmt->fetchAll();
+        $row = $mStmt->fetch();
+        
+        $marks = [];
+        if ($row) {
+            for ($i=1; $i<=5; $i++) {
+                if (!empty($row["s{$i}_name"])) {
+                    $marks[] = [
+                        'subject' => $row["s{$i}_name"],
+                        'obt' => $row["s{$i}_obt"],
+                        'max' => 100 // Visual default
+                    ];
+                }
+            }
+            $record['marks_total'] = $row['total_obt'];
+            $record['cutoff'] = $row['cutoff'];
+        }
         
         echo json_encode(['status' => 'success', 'record' => $record, 'marks' => $marks]);
     } else {

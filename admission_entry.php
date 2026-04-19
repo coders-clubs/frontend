@@ -16,23 +16,13 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="designer-animate">
-
-<header class="no-print">
-    <div class="nav-actions"><a href="dashboard.php" class="nav-btn btn-ghost">← DASHBOARD</a></div>
-    <div class="branding-center">
-        <img src="assets/logo.png" alt="NSCET" class="logo-main" style="height: 120px;">
-        <div class="college-title" style="margin-top: 10px;">NADAR SARASWATHI COLLEGE OF ENGINEERING & TECHNOLOGY</div>
-    </div>
-    <div class="nav-actions">
-        <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;"><?= htmlspecialchars($_SESSION['faculty_name'] ?? $_SESSION['faculty_email']) ?></span>
-        <a href="logout.php" class="nav-btn btn-danger-soft">LOGOUT</a>
-    </div>
-</header>
-
-<div class="page-hero no-print">
-    <h1>Student Admission</h1>
- 
-</div>
+<div class="app-container">
+    <?php include 'sidebar.php'; ?>
+    
+    <main class="main-content">
+        <div class="page-hero no-print" style="margin-bottom: 40px;">
+            <h1>Student Admission</h1>
+        </div>
 
 <div class="form-container">
     <div class="designer-card">
@@ -395,5 +385,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
     }
 </script>
 <script src="assets/js/script.js"></script>
+    </main>
+</div>
 </body>
 </html>
