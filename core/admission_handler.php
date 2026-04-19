@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
             $application_no = 'STUDENT-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 
-            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center, reg_no, school_name, percentage) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 !empty($_POST['date_of_joining']) ? $_POST['date_of_joining'] : null, 
                 $_POST['quota'] ?? 'Merit', $_POST['hostel'] ?? 'No', $_POST['concession'] ?? '', $_POST['bus_stop'] ?? '', 
                 $_POST['bill_type'] ?? 'Cash', $_POST['reference'] ?? '',
-                $faculty_email, $_SESSION['selected_center'] ?? ''
+                $faculty_email, $_SESSION['selected_center'] ?? '',
+                $_POST['reg_no'] ?? '', $_POST['school_name'] ?? '', $_POST['percentage'] ?? 0
             ]);
             
             $new_student_id = $pdo->lastInsertId();
@@ -66,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     admission_type = ?, student_name = ?, gender = ?, date_of_birth = ?, father_name = ?, caste = ?, 
                     state = ?, address = ?, place = ?, cell_1 = ?, reg_no = ?, department = ?, school_name = ?, 
                     percentage = ?, reference = ?, reference_name = ?, hostel = ?, uravinmurai_letter = ?, 
-                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?, concession = ?
+                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?, concession = ?, cell_2 = ?, bus_stop = ?
                     WHERE id = ? AND faculty_email = ?";
             
             $stmt = $pdo->prepare($sql);
@@ -82,7 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['fees_name'] ?? '', $_POST['amount'] ?? 0, $_POST['bill_type'] ?? 'Cash', $_POST['degree'] ?? '',
                 !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : null,
                 !empty($_POST['date_of_joining']) ? $_POST['date_of_joining'] : null,
-                $_POST['quota'] ?? 'Merit', $_POST['concession'] ?? '', $id, $faculty_email
+                $_POST['quota'] ?? 'Merit', $_POST['concession'] ?? '', 
+                $_POST['cell_2'] ?? '', $_POST['bus_stop'] ?? '',
+                $id, $faculty_email
             ]);
 
             if (isset($_POST['subject'])) {

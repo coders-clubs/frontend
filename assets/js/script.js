@@ -59,8 +59,9 @@ function fetchRecord() {
                     'receipt_no', 'admission_type', 'student_name', 'gender', 'father_name', 
                     'mother_name', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 
                     'religion', 'community', 'caste', 'father_occupation', 'mother_occupation',
-                    'application_no', 'department', 'quota', 'concession', 'admission_no', 
-                    'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no'
+                    'application_no', 'department', 'quota', 'concession', 'reg_no', 
+                    'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no',
+                    'school_name', 'percentage'
                 ];
                 
                 fields.forEach(f => {

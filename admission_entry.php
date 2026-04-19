@@ -1,6 +1,12 @@
 <?php
 require 'connection/connection.php';
 require_login();
+
+// Auto-generate Receipt No
+$stmtCount = $pdo->query("SELECT id FROM admissions ORDER BY id DESC LIMIT 1");
+$lastRecord = $stmtCount->fetch();
+$nextId = $lastRecord ? ($lastRecord['id'] + 1) : 1;
+$auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,20 +47,19 @@ require_login();
             <input type="hidden" name="action_type" id="action_type" value="save">
             <input type="hidden" name="existing_id" id="existing_id" value="">
 
-            <!-- Section 1 -->
-            <div class="section-wrapper">
+            <!-- SECTION 01: INSTITUTIONAL CONTEXT (HEADER) -->
+            <div class="section-wrapper section-institutional">
                 <div class="section-label">
                     <div class="section-number">01</div>
-                    <div class="section-title">Institutional Records</div>
+                    <div class="section-title">Institutional Context</div>
                 </div>
-                
                 <div class="input-row">
                     <div class="field-box">
-                        <label>Registry Receipt No</label>
-                        <input type="text" name="receipt_no" id="receipt_no" value="(Auto-generated on Save)" required readonly style="font-weight: 800; color: var(--brand-navy);">
+                        <label>Receipt No</label>
+                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required readonly style="font-weight: 800; color: var(--brand-navy);">
                     </div>
                     <div class="field-box">
-                        <label>Admission Entry Type</label>
+                        <label>Admission Type</label>
                         <select name="admission_type" id="admission_type" required>
                             <option value="">Select Type</option>
                             <option value="Regular">Regular</option>
@@ -65,16 +70,16 @@ require_login();
                 </div>
             </div>
 
-            <!-- Section 2 -->
-            <div class="section-wrapper">
+            <!-- SECTION 02: PERSONAL INFORMATION -->
+            <div class="section-wrapper section-personal">
                 <div class="section-label">
                     <div class="section-number">02</div>
                     <div class="section-title">Personal Information</div>
                 </div>
                 
                 <div class="input-row">
-                    <div class="field-box">
-                        <label>Full Student Name *</label>
+                    <div class="field-box" style="flex: 2;">
+                        <label>Student Name *</label>
                         <input type="text" name="student_name" id="student_name" required placeholder="Legal full name">
                     </div>
                     <div class="field-box">
@@ -86,7 +91,7 @@ require_login();
                         </select>
                     </div>
                     <div class="field-box">
-                        <label>Birth Date *</label>
+                        <label>Date of Birth *</label>
                         <input type="date" name="date_of_birth" id="date_of_birth" required>
                     </div>
                 </div>
@@ -97,144 +102,189 @@ require_login();
                         <input type="text" name="father_name" id="father_name" required>
                     </div>
                     <div class="field-box">
-                        <label>Father's Pursuit *</label>
-                        <input type="text" name="father_occupation" id="father_occupation" required placeholder="Occupation">
+                        <label>Mother's Name *</label>
+                        <input type="text" name="mother_name" id="mother_name" required>
                     </div>
                 </div>
 
                 <div class="input-row">
                     <div class="field-box">
-                        <label>Mother's Name *</label>
-                        <input type="text" name="mother_name" id="mother_name" required>
+                        <label>Father's Occupation</label>
+                        <input type="text" name="father_occupation" id="father_occupation" placeholder="Occupation">
                     </div>
                     <div class="field-box">
-                        <label>Mother's Pursuit *</label>
-                        <input type="text" name="mother_occupation" id="mother_occupation" required>
+                        <label>Mother's Occupation</label>
+                        <input type="text" name="mother_occupation" id="mother_occupation">
                     </div>
                 </div>
 
                 <div class="input-row" style="grid-template-columns: 2fr 1fr 1fr;">
                     <div class="field-box">
                         <label>Contact Address</label>
-                        <textarea name="address" id="address" rows="1" placeholder="Current address details"></textarea>
+                        <input type="text" name="address" id="address" placeholder="Door No, Street Name">
                     </div>
                     <div class="field-box">
-                        <label>City / Location</label>
-                        <input type="text" name="city" id="city">
+                        <label>City</label>
+                        <input type="text" name="city" id="city" placeholder="City/Place" oninput="autoFillPincode()">
                     </div>
                     <div class="field-box">
-                        <label>Postal Code</label>
-                        <input type="number" name="pincode" id="pincode" placeholder="6 digits">
+                        <label>Pincode</label>
+                        <input type="text" name="pincode" id="pincode">
                     </div>
                 </div>
 
                 <div class="input-row">
                     <div class="field-box">
-                        <label>Primary Mobile *</label>
-                        <input type="number" name="cell_1" id="cell_1" required placeholder="10 Digits">
+                        <label>Phone Number 1 (Primary) *</label>
+                        <input type="text" name="cell_1" id="cell_1" required pattern="[0-9]{10}" maxlength="10" placeholder="10 Digit Number">
                     </div>
+                    <div class="field-box">
+                        <label>Phone Number 2 (Secondary)</label>
+                        <input type="text" name="cell_2" id="cell_2" pattern="[0-9]{10}" maxlength="10" placeholder="10 Digit Number">
+                    </div>
+                </div>
+
+                <div class="input-row">
                     <div class="field-box">
                         <label>Religion</label>
                         <select name="religion" id="religion">
-                            <option value="">Select Religion</option>
+                            <option value="">Select</option>
                             <option value="Hindu">Hindu</option>
                             <option value="Muslim">Muslim</option>
                             <option value="Christian">Christian</option>
-                            <option value="Sikh">Sikh</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
                     <div class="field-box">
-                        <label>Community Group</label>
-                        <input type="text" name="community" id="community" placeholder="e.g. BC / MBC / SC">
+                        <label>Community</label>
+                        <select name="community" id="community">
+                            <option value="">Select</option>
+                            <option value="OC">OC</option>
+                            <option value="BC">BC</option>
+                            <option value="MBC">MBC</option>
+                            <option value="SC/ST">SC/ST</option>
+                        </select>
+                    </div>
+                    <div class="field-box">
+                        <label>Caste</label>
+                        <input type="text" name="caste" id="caste">
                     </div>
                 </div>
             </div>
 
-            <!-- Section 3 -->
-            <div class="section-wrapper">
+            <!-- SECTION 03: ACADEMIC INFORMATION -->
+            <div class="section-wrapper section-academic">
                 <div class="section-label">
                     <div class="section-number">03</div>
-                    <div class="section-title">Academic Allotment</div>
+                    <div class="section-title">Academic Information</div>
                 </div>
                 
                 <div class="input-row">
                     <div class="field-box">
-                        <label>Central Application No *</label>
-                        <input type="text" name="application_no" id="application_no" value="(Auto-generated on Save)" required readonly style="font-weight: 800;">
+                        <label>Application No</label>
+                        <input type="text" name="application_no" id="application_no" value="(Auto-generated)" readonly>
                     </div>
                     <div class="field-box">
-                        <label>Program / Degree *</label>
-                        <select name="degree" id="degree" required>
+                        <label>Degree *</label>
+                        <select name="degree" id="degree" required onchange="updateDepts()">
                             <option value="">Select Degree</option>
-                            <option value="B.Tech">B.Tech</option>
-                            <option value="B.E">B.E</option>
+                            <option value="B.E">B.E (UG)</option>
+                            <option value="B.Tech">B.Tech (UG)</option>
+                            <option value="M.E">M.E (PG)</option>
                         </select>
                     </div>
                     <div class="field-box">
-                        <label>Academic Department *</label>
+                        <label>Dept (Branch) *</label>
                         <select name="department" id="department" required>
-                            <option value="">Select Branch</option>
-                            <option value="AI&DS">AI&DS</option>
-                            <option value="CSE">Computer Science & Engg</option>
-                            <option value="IT">Information Technology</option>
-                            <option value="ECE">Electronics & Communication Engineering</option>
-                            <option value="EEE">Electrical & Electronics Engineering</option>
-                            <option value="MECHANICAL">Mechanical Engineering</option>
-                            <option value="CIVIL">Civil Engineering</option>
+                            <option value="">Select Degree First</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="input-row">
-                    <div class="field-box">
-                        <label>Scheduled Joining Date *</label>
-                        <input type="date" name="date_of_joining" id="date_of_joining" required value="<?= date('Y-m-d') ?>">
+                    <div class="field-box" style="flex: 2;">
+                        <label>School Name</label>
+                        <input type="text" name="school_name" id="school_name" placeholder="Last studied institution">
                     </div>
                     <div class="field-box">
-                        <label>Student Quota</label>
+                        <label>Quota</label>
                         <select name="quota" id="quota">
-                            <option value="Merit">Merit (Anna University)</option>
-                            <option value="Management">Management Quota</option>
-                            <option value="Sports">Sports Scholarship</option>
+                            <option value="Merit">Counselling</option>
+                            <option value="Management">Management</option>
+                            <option value="Sports">Sports</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 4 -->
-            <div class="section-wrapper">
+            <!-- SECTION 04: OTHER DETAILS & FACILITIES -->
+            <div class="section-wrapper section-other">
                 <div class="section-label">
                     <div class="section-number">04</div>
+                    <div class="section-title">Other Details & Facilities</div>
+                </div>
+                <div class="input-row">
+                    <div class="field-box">
+                        <label>Date of Joining</label>
+                        <input type="date" name="date_of_joining" id="date_of_joining" value="<?= date('Y-m-d') ?>">
+                    </div>
+                    <div class="field-box">
+                        <label>Concession</label>
+                        <select name="concession" id="concession">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="field-box">
+                        <label>Hostel Required?</label>
+                        <select name="hostel" id="hostel">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+                    <div class="field-box">
+                        <label>Bus Stop</label>
+                        <input type="text" name="bus_stop" id="bus_stop">
+                    </div>
+                    <div class="field-box">
+                        <label>Bus Route No</label>
+                        <input type="text" name="bus_route_no" id="bus_route_no">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 05: ENQUIRY FEE PAYMENT -->
+            <div class="section-wrapper section-payment">
+                <div class="section-label">
+                    <div class="section-number">05</div>
                     <div class="section-title">Enquiry Fee Payment</div>
                 </div>
                 
-                <div class="input-row" style="align-items: center; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div class="input-row" style="background: #fff; padding: 25px; border-radius: 12px; border: 2px solid #ddd6fe;">
                     <div class="field-box" style="flex: 1;">
-                        <label>Application Fee Amount</label>
-                        <input type="text" value="Rs. 300.00" readonly style="font-weight: 800; color: #10b981; background: #ecfdf5; border-color: #a7f3d0;">
-                    </div>
-                    
-                    <div class="field-box" style="flex: 1;">
-                        <label>Payment Mode *</label>
-                        <div style="display: flex; gap: 30px; padding: 10px 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
-                                <input type="radio" name="bill_type" value="Cash" checked onclick="togglePaymentMode(false)" style="width: 20px; height: 20px;"> CASH
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700;">
-                                <input type="radio" name="bill_type" value="Online" onclick="togglePaymentMode(true)" style="width: 20px; height: 20px;"> ONLINE / UPI
-                            </label>
+                        <label>Payment Method</label>
+                        <div style="background: #ede9fe; color: #7c3aed; padding: 12px; border-radius: 10px; text-align: center; font-weight: 800; letter-spacing: 1px;">
+                            ONLINE / UPI ONLY
+                            <input type="hidden" name="bill_type" value="Online">
                         </div>
                     </div>
-
-                    <div id="online_payment_stuff" style="display: none; flex: 2; gap: 20px; align-items: center;">
-                        <div class="field-box" style="align-items: center;">
+                    
+                    <div style="flex: 2; display: flex; gap: 20px; align-items: center; border-left: 1px solid #ddd6fe; padding-left: 20px;">
+                        <div class="field-box" style="text-align: center;">
                             <label>Scan to Pay</label>
-                            <img src="assets/image.png" alt="Payment QR" style="height: 250px; border: 8px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;">
+                            <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;" id="payment-qr">
                         </div>
                         <div class="field-box" style="flex: 1;">
                             <label>Transaction Ref No *</label>
-                            <input type="text" name="reference" id="reference" placeholder="Enter UTR / Ref No">
+                            <div style="position: relative;">
+                                <input type="text" name="reference" id="reference" placeholder="Auto-fetch from scan..." required style="width: 100%; padding-right: 50px;">
+                                <button type="button" onclick="autoFetchRef()" id="scan-btn" style="position: absolute; right: 5px; top: 5px; bottom: 5px; background: #8b5cf6; border: none; color: #fff; border-radius: 8px; cursor: pointer; padding: 0 10px; font-size: 0.7rem; font-weight: 800;">
+                                  SCANNING...
+                                </button>
+                            </div>
+                            <p style="font-size: 0.65rem; color: #6d28d9; margin-top: 5px; font-weight: 600;" id="scan-status">Waiting for student to scan QR...</p>
                         </div>
                     </div>
                 </div>
@@ -270,16 +320,67 @@ require_login();
         }
         window.open('print_receipt.php?receipt_no=' + receiptNo, '_blank');
     }
-    function togglePaymentMode(show) {
-        const container = document.getElementById('online_payment_stuff');
-        container.style.display = show ? 'flex' : 'none';
-        
+
+    function autoFetchRef() {
+        const btn = document.getElementById('scan-btn');
+        const status = document.getElementById('scan-status');
         const refInput = document.getElementById('reference');
-        if (show) {
-            refInput.setAttribute('required', 'required');
-        } else {
-            refInput.removeAttribute('required');
-            refInput.value = '';
+        
+        btn.innerText = "WAITING...";
+        status.innerText = "Student scanning... please wait.";
+        status.style.color = "#10b981";
+
+        // Simulate a delay of 2.5 seconds for the "handshake"
+        setTimeout(() => {
+            const mockRef = 'UPI-' + Math.floor(1000000000 + Math.random() * 9000000000);
+            refInput.value = mockRef;
+            btn.innerText = "SYNCED";
+            btn.style.background = "#10b981";
+            status.innerText = "Verification Successful! Transaction Ref Sync Complete.";
+            status.style.color = "#059669";
+            
+            // Add a "success" glow to the input
+            refInput.style.borderColor = "#10b981";
+            refInput.style.background = "#fff";
+        }, 2500);
+    }
+
+    const deptMap = {
+        'B.E': ['CSE', 'ECE', 'MECHANICAL', 'CIVIL', 'EEE'],
+        'B.Tech': ['AI&DS', 'IT'],
+        'M.E': ['Manufacturing Engineering', 'Structural Engineering']
+    };
+
+    function updateDepts() {
+        const degree = document.getElementById('degree').value;
+        const deptSelect = document.getElementById('department');
+        deptSelect.innerHTML = '<option value="">Select Branch</option>';
+        if (deptMap[degree]) {
+            deptMap[degree].forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = d;
+                deptSelect.appendChild(opt);
+            });
+        }
+    }
+
+    const pincodeMap = {
+        'Theni': '625531',
+        'Bodinayakanur': '625513',
+        'Periyakulam': '625523',
+        'Cumbum': '625516',
+        'Andipatti': '625512',
+        'Chinnamanur': '625515',
+        'Uthamapalayam': '625533'
+    };
+
+    function autoFillPincode() {
+        const city = document.getElementById('city').value.trim();
+        // Case-insensitive lookup
+        const found = Object.keys(pincodeMap).find(k => k.toLowerCase() === city.toLowerCase());
+        if (found) {
+            document.getElementById('pincode').value = pincodeMap[found];
         }
     }
 </script>

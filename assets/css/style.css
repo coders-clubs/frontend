@@ -159,6 +159,65 @@ header {
     letter-spacing: -0.5px;
 }
 
+/* SECTION DIFFERENTIATION */
+.section-wrapper {
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.section-institutional {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.section-personal {
+    background: #f0f9ff;
+    border-color: #bae6fd;
+}
+
+.section-academic {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.section-other {
+    background: #fffcf0;
+    border-color: #fef3c7;
+}
+
+.section-payment {
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+}
+
+.section-institutional .section-number {
+    background: #64748b;
+    color: #fff;
+}
+
+.section-personal .section-number {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.section-academic .section-number {
+    background: #10b981;
+    color: #fff;
+}
+
+.section-other .section-number {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.section-payment .section-number {
+    background: #8b5cf6;
+    color: #fff;
+}
+
 .field-box {
     display: flex;
     flex-direction: column;
