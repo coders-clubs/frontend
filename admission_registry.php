@@ -1,6 +1,11 @@
 <?php
 require 'connection/connection.php';
 require_login();
+
+if (!isset($_SESSION['selected_center'])) {
+    header("Location: dashboard.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +27,9 @@ require_login();
     <?php include 'sidebar.php'; ?>
     
     <main class="main-content">
-        <div class="dash-container" style="margin-top: 0; margin-bottom: 20px;">
+        <div class="dash-container">
+            <?php include 'branding.php'; ?>
+            
             <div class="hero-section no-print" style="margin-bottom: 40px;">
                 <h1 style="font-size: 3rem;">Registry Master</h1>
                 <p style="color: var(--text-secondary); font-weight: 600;">Verification and Final Academic Orchestration</p>

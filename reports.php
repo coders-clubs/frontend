@@ -2,33 +2,46 @@
 require 'connection/connection.php';
 require_login();
 
+if (!isset($_SESSION['selected_center'])) {
+    header("Location: dashboard.php");
+    exit;
+}
+
+$active_center = $_SESSION['selected_center'];
+$active_center_name = $_SESSION['selected_center_name'];
 $today = date('Y-m-d');
 $today_display = date('d F Y');
 
-// DATA FETCHING
+// DATA FETCHING (Filtered by Active Center)
 // 1. Today's Counts
-$stmtToday = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE receipt_date = ? GROUP BY department, degree");
-$stmtToday->execute([$today]);
+$stmtToday = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE receipt_date = ? AND center = ? GROUP BY department, degree");
+$stmtToday->execute([$today, $active_center]);
 $today_rows = $stmtToday->fetchAll();
 
 // 2. Cumulative Counts
-$stmtCumul = $pdo->query("SELECT department, degree, COUNT(*) as count FROM admissions GROUP BY department, degree");
+$stmtCumul = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE center = ? GROUP BY department, degree");
+$stmtCumul->execute([$active_center]);
 $cumul_rows = $stmtCumul->fetchAll();
 
 // 3. Management Quota
-$stmtMQ = $pdo->query("SELECT department, COUNT(*) as count FROM admissions WHERE quota = 'Management' GROUP BY department");
+$stmtMQ = $pdo->prepare("SELECT department, COUNT(*) as count FROM admissions WHERE quota = 'Management' AND center = ? GROUP BY department");
+$stmtMQ->execute([$active_center]);
 $mq_data = $stmtMQ->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // Helpers
 function getVal($data, $dept) {
     foreach($data as $row) {
+        // Soft match to handle case or whitespace differences
         if (trim(strtolower($row['department'])) == trim(strtolower($dept))) return $row['count'];
+        // Also check if dept is part of the stored value (e.g. "B.E CSE" vs "CSE")
+        if (stripos($row['department'], $dept) !== false) return $row['count'];
     }
     return 0;
 }
 
+// Fixed Dept List (Matching typical NSCET standards)
 $depts = [
-    'B.E. CSE', 'B.E. Mech', 'B.E. ECE', 'B.E. Civil', 'B.E. EEE', 'B.Tech IT', 'B.Tech AI&DS', 'M.E. Structural'
+    'B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural'
 ];
 
 $todayUG = 0; $todayPG = 0;
@@ -48,129 +61,167 @@ foreach($today_rows as $r) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Application Status | NSCET</title>
+    <title>Admission Progress Report | NSCET</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        :root {
-            --report-bg: #fdfdfd;
-            --card-dark: #27272a;
-            --text-muted: #71717a;
-        }
-        body { background: var(--report-bg); }
-        .report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-        .report-header h1 { font-size: 2.2rem; color: #18181b; margin-bottom: 5px; opacity: 0.9; }
-        .report-header p { color: var(--text-muted); font-weight: 600; font-size: 1.1rem; }
+        body { background: #f4f7f6; font-family: 'Inter', sans-serif; }
         
-        .live-tag { background: #eff6ff; color: #2563eb; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.5px; border: 1px solid #dbeafe; }
+        /* PRINT SPECIFIC STYLES - PROFESSIONAL GRADE */
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .app-container { display: block !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            .dash-container { max-width: 100% !important; border: none !important; box-shadow: none !important; background: white !important; padding: 0 !important; }
+            
+            .formal-header { display: flex !important; flex-direction: column; align-items: center; text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .formal-header h1 { font-size: 22pt !important; margin: 0; color: #000; }
+            .formal-header p { font-size: 10pt !important; margin: 5px 0; color: #333; }
+            
+            .report-title-box { display: block !important; text-align: center; margin-bottom: 30px; }
+            .report-title-box h2 { text-decoration: underline; font-size: 16pt; margin-bottom: 10px; }
+            
+            .formal-table { display: table !important; width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            .formal-table th, .formal-table td { border: 1px solid #000; padding: 8px 12px; font-size: 10pt; text-align: center; }
+            .formal-table th { background: #f0f0f0 !important; font-weight: bold; }
+            .formal-table .text-left { text-align: left; }
+            
+            .signature-section { display: flex !important; justify-content: space-between; margin-top: 80px; }
+            .sig-box { text-align: center; width: 200px; border-top: 1px solid #000; padding-top: 10px; font-weight: bold; font-size: 10pt; }
+            
+            .summary-cards-print { display: block !important; margin-bottom: 20px; }
+            .summary-print-item { display: inline-block; width: 24%; border: 1px solid #ddd; padding: 10px; text-align: center; }
 
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
-        .summary-card { background: var(--card-dark); color: #fff; padding: 30px; border-radius: 20px; position: relative; }
-        .summary-card span { display: block; font-size: 0.9rem; font-weight: 600; opacity: 0.7; margin-bottom: 10px; }
-        .summary-card h2 { font-size: 3rem; font-weight: 800; margin-bottom: 5px; }
-        .summary-card p { font-size: 0.9rem; opacity: 0.5; font-weight: 500; }
+            /* Hide Web-only Insights */
+            .web-only { display: none !important; }
+        }
 
-        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-        .insight-box { background: #3f3f46; color: #fff; padding: 40px; border-radius: 24px; }
-        .insight-box h3 { font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 30px; opacity: 0.6; text-transform: uppercase; }
+        /* WEB VIEW STYLES */
+        .report-card { background: white; border-radius: 20px; padding: 40px; box-shadow: var(--shadow-premium); border: 1px solid #e2e8f0; }
+        .formal-header, .report-title-box, .formal-table, .signature-section { display: none; }
+        
+        .insight-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        .dept-label { font-weight: 700; color: var(--brand-navy); }
+        .count-bubble { background: #f1f5f9; padding: 5px 12px; border-radius: 10px; font-weight: 800; }
 
-        .progress-row { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; }
-        .dept-name { width: 140px; font-weight: 600; font-size: 0.95rem; opacity: 0.9; }
-        .progress-bar { flex: 1; height: 6px; background: #27272a; border-radius: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
-        .val-pill { width: 30px; text-align: right; font-weight: 800; font-size: 1.1rem; opacity: 0.8; }
-
-        .mq-card { background: #3f3f46; color: #fff; padding: 40px; border-radius: 24px; }
-        .mq-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #52525b; align-items: center; }
-        .mq-item:last-child { border-bottom: none; }
-        .mq-label { font-size: 1.1rem; font-weight: 600; max-width: 250px; line-height: 1.2; }
-        .mq-badge { background: #fff; color: #27272a; height: 36px; width: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; }
     </style>
 </head>
 <body class="designer-animate">
 <div class="app-container">
-    <?php include 'sidebar.php'; ?>
+    <div class="no-print">
+        <?php include 'sidebar.php'; ?>
+    </div>
+    
     <main class="main-content">
-        <div class="dash-container" style="max-width: 1100px;">
-            <div class="report-header">
-                <div>
-                    <h1>Application sold status</h1>
-                    <p>Academic year 2026-27 &middot; Today: <?= $today_display ?></p>
-                </div>
-                <div class="live-tag">Live report</div>
+        <div class="dash-container">
+            <?php include 'branding.php'; ?>
+            
+            <div class="report-title-box text-center">
+                <h2>ADMISSION SOLD STATUS REPORT</h2>
+                <p style="font-weight: bold;">Admission Center: <?= htmlspecialchars($active_center_name) ?></p>
+                <p>Report Date: <?= $today_display ?></p>
             </div>
 
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <span>Today UG</span>
-                    <h2><?= str_pad($todayUG, 2, "0", STR_PAD_LEFT) ?></h2>
-                    <p>applications</p>
-                </div>
-                <div class="summary-card">
-                    <span>Today PG</span>
-                    <h2><?= str_pad($todayPG, 2, "0", STR_PAD_LEFT) ?></h2>
-                    <p>applications</p>
-                </div>
-                <div class="summary-card">
-                    <span>Total UG</span>
-                    <h2><?= str_pad($totalUG, 2, "0", STR_PAD_LEFT) ?></h2>
-                    <p>cumulative</p>
-                </div>
-                <div class="summary-card">
-                    <span>Total PG</span>
-                    <h2><?= str_pad($totalPG, 2, "0", STR_PAD_LEFT) ?></h2>
-                    <p>cumulative</p>
-                </div>
-            </div>
-
-            <div class="insights-grid">
-                <!-- Today Insights -->
-                <div class="insight-box">
-                    <h3>Today's UG Applications</h3>
-                    <?php foreach($depts as $d): 
-                        $val = getVal($today_rows, $d);
-                        $w = min(100, ($val * 20)); // Visualization scale
-                    ?>
-                    <div class="progress-row">
-                        <div class="dept-name"><?= $d ?></div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: <?= $w ?>%; background: #3b82f6;"></div>
-                        </div>
-                        <div class="val-pill"><?= $val ?></div>
+            <!-- WEB UI VIEW -->
+            <div class="report-card web-only">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <div>
+                        <h1 style="font-size: 2rem; color: var(--brand-navy);">Admission Sold Status</h1>
+                        <p style="color: #64748b; font-weight: 600;">Campus Context: <?= htmlspecialchars($active_center_name) ?></p>
                     </div>
-                    <?php endforeach; ?>
+                    <button class="btn-designer btn-primary-designer no-print" onclick="window.print()">🖨️ PRINT FORMAL REPORT</button>
                 </div>
 
-                <!-- Cumulative Insights -->
-                <div class="insight-box">
-                    <h3>Cumulative UG + PG</h3>
-                    <?php foreach($depts as $d): 
-                        $val = getVal($cumul_rows, $d);
-                        $w = min(100, ($val * 2)); // Visualization scale
-                    ?>
-                    <div class="progress-row">
-                        <div class="dept-name"><?= $d ?></div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: <?= $w ?>%; background: #10b981;"></div>
-                        </div>
-                        <div class="val-pill"><?= $val ?></div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                    <div style="background: var(--brand-navy); color: white; padding: 25px; border-radius: 20px;">
+                        <span style="font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px;">Today UG</span>
+                        <h2 style="font-size: 2.5rem;"><?= $todayUG ?></h2>
                     </div>
+                    <div style="background: var(--brand-navy); color: white; padding: 25px; border-radius: 20px;">
+                        <span style="font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px;">Today PG</span>
+                        <h2 style="font-size: 2.5rem;"><?= $todayPG ?></h2>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 20px;">
+                        <span style="font-size: 0.7rem; text-transform: uppercase; color: #64748b; letter-spacing: 1px;">Cumulative Total</span>
+                        <h2 style="font-size: 2.5rem; color: var(--brand-navy);"><?= ($totalUG + $totalPG) ?></h2>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                    <div>
+                        <h3 style="font-size: 1rem; margin-bottom: 20px;">Dept-wise Pulse (Today)</h3>
+                        <?php foreach($depts as $d): $v = getVal($today_rows, $d); ?>
+                            <div class="insight-row">
+                                <span class="dept-label"><?= $d ?></span>
+                                <span class="count-bubble" style="<?= $v > 0 ? 'background: #dcfce7; color: #166534;' : '' ?>"><?= $v ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; margin-bottom: 20px;">Management Quota</h3>
+                        <?php foreach($mq_data as $dept => $count): ?>
+                            <div class="insight-row">
+                                <span class="dept-label"><?= $dept ?></span>
+                                <span class="count-bubble" style="background: #fef9c3; color: #854d0e;"><?= $count ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMAL TABLE (Print Only) -->
+            <table class="formal-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">S.No</th>
+                        <th rowspan="2" class="text-left">Department Name</th>
+                        <th colspan="2">Today Status (<?= $active_center_name ?>)</th>
+                        <th colspan="2">Cumulative Status</th>
+                        <th rowspan="2">Mgmt Quota</th>
+                    </tr>
+                    <tr>
+                        <th>UG</th>
+                        <th>PG</th>
+                        <th>UG</th>
+                        <th>PG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $sn = 1;
+                    foreach($depts as $d): 
+                        $tRow = 0; // Logic for row-wise split if needed
+                        $cRow = getVal($cumul_rows, $d);
+                        $tRow = getVal($today_rows, $d);
+                        $isPG = (stripos($d, 'M.E') !== false);
+                    ?>
+                    <tr>
+                        <td><?= $sn++ ?></td>
+                        <td class="text-left"><?= $d ?></td>
+                        <td><?= !$isPG ? $tRow : '-' ?></td>
+                        <td><?= $isPG ? $tRow : '-' ?></td>
+                        <td><?= !$isPG ? $cRow : '-' ?></td>
+                        <td><?= $isPG ? $cRow : '-' ?></td>
+                        <td><?= $mq_data[$d] ?? '-' ?></td>
+                    </tr>
                     <?php endforeach; ?>
-                </div>
+                    <tr style="font-weight: bold; background: #eee;">
+                        <td colspan="2">TOTAL</td>
+                        <td><?= $todayUG ?></td>
+                        <td><?= $todayPG ?></td>
+                        <td><?= $totalUG ?></td>
+                        <td><?= $totalPG ?></td>
+                        <td><?= array_sum($mq_data) ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="signature-section">
+                <div class="sig-box">Admission Coordinator</div>
+                <div class="sig-box">Verified by (AO)</div>
+                <div class="sig-box">PRINCIPAL</div>
             </div>
 
-            <div class="mq-card">
-                <h3 style="font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 20px; opacity: 0.6; text-transform: uppercase;">Management Quota Admissions</h3>
-                <?php foreach($mq_data as $dept => $count): ?>
-                <div class="mq-item">
-                    <div class="mq-label"><?= $dept ?></div>
-                    <div class="mq-badge"><?= $count ?></div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-
-            <div style="margin-top: 40px; text-align: center;">
-                <button class="btn-designer btn-primary-designer no-print" onclick="window.print()">GENERATE PDF REPORT</button>
-            </div>
         </div>
     </main>
 </div>

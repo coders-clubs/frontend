@@ -2,6 +2,11 @@
 require 'connection/connection.php';
 require_login();
 
+if (!isset($_SESSION['selected_center'])) {
+    header("Location: dashboard.php");
+    exit;
+}
+
 // Auto-generate Receipt No
 $stmtCount = $pdo->query("SELECT id FROM admissions ORDER BY id DESC LIMIT 1");
 $lastRecord = $stmtCount->fetch();
@@ -20,9 +25,12 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
     <?php include 'sidebar.php'; ?>
     
     <main class="main-content">
-        <div class="page-hero no-print" style="margin-bottom: 40px;">
-            <h1>Student Admission</h1>
-        </div>
+        <div class="dash-container">
+            <?php include 'branding.php'; ?>
+            
+            <div class="page-hero no-print" style="margin-bottom: 40px;">
+                <h1>Student Admission</h1>
+            </div>
 
 <div class="form-container">
     <div class="designer-card">
@@ -385,6 +393,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
     }
 </script>
 <script src="assets/js/script.js"></script>
+        </div>
     </main>
 </div>
 </body>
