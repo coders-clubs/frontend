@@ -59,7 +59,7 @@ function require_admin() {
 
 $centers_list = [
     'nscet' => 'NSCET',
-    'uravinmurai' => 'uravinmurai',
+    'uravinmurai' => 'Uravinmurai',
     'tmhnu_boys' => 'TMHNU Boys school',
     'tmhnu_girls' => 'TMHNU girls school',
     'bodinayakanur' => 'Bodinayakanur',

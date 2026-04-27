@@ -72,7 +72,7 @@ if (!isset($_SESSION['selected_center'])) {
                         <div class="input-row">
                             <div class="field-box">
                                 <label>Receipt Date</label>
-                                <input type="date" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
+                                <input type="date" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" readonly style="background: #f1f5f9; cursor: not-allowed;">
                             </div>
                             <div class="field-box">
                                 <label>Degree</label>
@@ -158,11 +158,11 @@ if (!isset($_SESSION['selected_center'])) {
                                 <span>AGGREGATE TOTAL</span>
                                 <span id="grand-total" style="font-size: 1.5rem; font-weight: 800;">0</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                                <span>ADMISSION CUTOFF (200)</span>
-                                <span id="cutoff-display" style="font-size: 1.5rem; font-weight: 800; color: var(--brand-gold);">0.00</span>
+                            <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; align-items: center;">
+                                <span>ADMISSION CUTOFF (Manual)</span>
+                                <input type="number" step="0.01" name="cutoff" id="cutoff" value="0.00" style="width: 120px; font-size: 1.5rem; font-weight: 800; color: var(--brand-gold); text-align: right; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 10px;">
                             </div>
-                        </div>v>
+                        </div>
                     </div>
 
                     <div class="section-wrapper">
@@ -217,10 +217,7 @@ if (!isset($_SESSION['selected_center'])) {
                                 <label style="font-size: 0.6rem;">Scan to Pay</label>
                                 <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px;">
                             </div>
-                            <div class="field-box" style="flex: 1;">
-                                <label>Transaction Ref / UTR No *</label>
-                                <input type="text" name="reference" id="reference" placeholder="Enter Reference Number">
-                            </div>
+
                         </div>
                     </div>
                  </div>
@@ -238,6 +235,16 @@ if (!isset($_SESSION['selected_center'])) {
 
 <script src="assets/js/script.js"></script>
 <script>
+    // Prevent modifications without a fetched record
+    document.getElementById('advancedAdmissionForm').onsubmit = function(e) {
+        const receipt = document.getElementById('receipt_no').value;
+        if (!receipt || receipt.trim() === "") {
+            e.preventDefault();
+            alert("CRITICAL: No student record detected. Please search for a Receipt No and 'Scan & Sync' before saving.");
+            return false;
+        }
+    };
+
     function addMarkRow() {
         const tbody = document.getElementById('marks-body');
         const row = document.createElement('tr');
@@ -255,12 +262,7 @@ if (!isset($_SESSION['selected_center'])) {
                 
                 document.getElementById('grand-total').innerText = totalObt;
 
-                // Cutoff: Math + Phys/2 + Chem/2
-                const m = Number(obts[0]?.value) || 0;
-                const p = Number(obts[1]?.value) || 0;
-                const c = Number(obts[2]?.value) || 0;
-                const cutoff = m + (p/2) + (c/2);
-                document.getElementById('cutoff-display').innerText = cutoff.toFixed(2);
+                // Auto-calculation disabled as per user request for manual entering
             };
         });
     }
@@ -279,11 +281,17 @@ if (!isset($_SESSION['selected_center'])) {
                     const marks = data.marks || [];
                     
                     document.getElementById('advanced_id').value = r.id;
-                    const fields = ['receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop'];
+                    const fields = ['receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop', 'cutoff'];
                     fields.forEach(f => {
                          const el = document.getElementById(f);
                          if(el) el.value = r[f] || '';
                     });
+
+                    // Update Admission Type Radials
+                    if (r.admission_type) {
+                        const radio = document.querySelector(`input[name="admission_type"][value="${r.admission_type}"]`);
+                        if (radio) radio.checked = true;
+                    }
 
                     // Build Marks Table
                     const tbody = document.getElementById('marks-body');

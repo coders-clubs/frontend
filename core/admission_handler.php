@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $totalObt += $sObts[$i];
                 }
                 
-                // Automate Cutoff (Standard: Math + Phys/2 + Chem/2)
-                $cutoff = $sObts[0] + ($sObts[1] / 2) + ($sObts[2] / 2);
+                // Manual Cutoff input from Registry form
+                $cutoff = floatval($_POST['cutoff'] ?? 0);
                 
                 $mBatch = [$new_student_id, $receipt_no, $_POST['student_name'] ?? ''];
                 for($i=0; $i<5; $i++) {
@@ -121,7 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $totalObt += $sObts[$i];
                 }
                 
-                $cutoff = $sObts[0] + ($sObts[1] / 2) + ($sObts[2] / 2);
+                // Manual Cutoff input from Registry form
+                $cutoff = floatval($_POST['cutoff'] ?? 0);
                 
                 $mBatch = [$id, $_POST['receipt_no'] ?? '', $_POST['student_name'] ?? ''];
                 for($i=0; $i<5; $i++) {

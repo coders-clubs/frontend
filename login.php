@@ -194,9 +194,9 @@ if (isset($_SESSION['faculty_email'])) {
     <div class="premium-container">
         <div class="brand-panel">
             <img src="assets/logo.png" alt="NSCET Logo">
-            <div class="college-name">NADAR SARASWATHI COLLEGE</div>
-            <div class="college-tagline">Engineering & Technology</div>
-            <p style="opacity: 0.6; font-size: 0.9rem; max-width: 300px;">Optimized Admission Management System</p>
+            <div class="college-name" style="font-size: 1.6rem;">NADAR SARASWATHI COLLEGE OF ENGINEERING AND TECHNOLOGY</div>
+            <div class="college-tagline">Theni Melapettai Hindu Nadargal Uravinmurai</div>
+            <p style="opacity: 0.6; font-size: 0.8rem; max-width: 300px; margin-top: 20px;">Optimized Admission Management System</p>
         </div>
         
         <div class="login-panel">
@@ -224,7 +224,6 @@ if (isset($_SESSION['faculty_email'])) {
                 <button type="submit" class="btn-submit">Login →</button>
                 
                 <div class="footer-links">
-                    <a href="forgot_password.php">Forget Password</a>
                     <a href="register.php" style="color: var(--brand-gold-bright)">Create Account</a>
                 </div>
             </form>

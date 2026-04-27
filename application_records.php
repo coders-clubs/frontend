@@ -8,32 +8,36 @@ $faculties = [];
 // Filtering parameters
 $startDate = $_GET['startDate'] ?? '';
 $endDate = $_GET['endDate'] ?? '';
-$selCenter = $_GET['center'] ?? 'all';
+// Security: Faculty cannot override center via GET
+$selCenter = (is_admin() && isset($_GET['center'])) ? $_GET['center'] : ($_SESSION['selected_center'] ?? 'all');
 $selFaculty = $_GET['faculty'] ?? (is_admin() ? 'all' : $faculty_email);
 
 // Base queries
-$query = "SELECT * FROM admissions WHERE 1=1";
+$query = "SELECT a.*, u.name as staff_name 
+          FROM admissions a 
+          LEFT JOIN users u ON a.faculty_email = u.email 
+          WHERE 1=1";
 $params = [];
 
 if (is_admin()) {
-    $fStmt = $pdo->query("SELECT DISTINCT faculty_email FROM admissions");
-    $faculties = $fStmt->fetchAll(PDO::FETCH_COLUMN);
+    $fStmt = $pdo->query("SELECT DISTINCT name, email FROM users WHERE role = 'faculty'");
+    $faculties = $fStmt->fetchAll();
     
     if ($selFaculty !== 'all') {
-        $query .= " AND faculty_email = ?";
+        $query .= " AND a.faculty_email = ?";
         $params[] = $selFaculty;
     }
 } else {
     // Faculty only sees their own
-    $query .= " AND faculty_email = ?";
+    $query .= " AND a.faculty_email = ?";
     $params[] = $faculty_email;
 }
 
-if (!empty($startDate)) { $query .= " AND DATE(created_at) >= ?"; $params[] = $startDate; }
-if (!empty($endDate)) { $query .= " AND DATE(created_at) <= ?"; $params[] = $endDate; }
-if ($selCenter !== 'all') { $query .= " AND center = ?"; $params[] = $selCenter; }
+if (!empty($startDate)) { $query .= " AND DATE(a.created_at) >= ?"; $params[] = $startDate; }
+if (!empty($endDate)) { $query .= " AND DATE(a.created_at) <= ?"; $params[] = $endDate; }
+if ($selCenter !== 'all') { $query .= " AND a.center = ?"; $params[] = $selCenter; }
 
-$query .= " ORDER BY created_at ASC";
+$query .= " ORDER BY a.created_at ASC";
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $records = $stmt->fetchAll();
@@ -126,6 +130,7 @@ $records = $stmt->fetchAll();
                         <label>To Date</label>
                         <input type="date" name="endDate" value="<?= htmlspecialchars($endDate) ?>" onchange="this.form.submit()">
                     </div>
+                    <?php if (is_admin()): ?>
                     <div class="field-box">
                         <label>Admission Center</label>
                         <select name="center" onchange="this.form.submit()">
@@ -135,6 +140,7 @@ $records = $stmt->fetchAll();
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php endif; ?>
                     
                     <?php if (is_admin()): ?>
                     <div class="field-box">
@@ -142,7 +148,7 @@ $records = $stmt->fetchAll();
                         <select name="faculty" onchange="this.form.submit()">
                             <option value="all">All Staff</option>
                             <?php foreach($faculties as $f): ?>
-                                <option value="<?= htmlspecialchars($f) ?>" <?= $selFaculty == $f ? 'selected' : '' ?>><?= htmlspecialchars($f) ?></option>
+                                <option value="<?= htmlspecialchars($f['email']) ?>" <?= $selFaculty == $f['email'] ? 'selected' : '' ?>><?= htmlspecialchars($f['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -184,7 +190,8 @@ $records = $stmt->fetchAll();
                                     <th>Student Name</th>
                                     <th>Program / Dept</th>
                                     <th>Admission Center</th>
-                                    <th>Date of Joining</th>
+                                    <th>Registered By</th>
+                                    <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -197,7 +204,10 @@ $records = $stmt->fetchAll();
                                         <td style="font-weight: 600; font-size: 0.8rem; color: var(--brand-navy);">
                                             <?= htmlspecialchars($centers_list[$r['center']] ?? $r['center'] ?? 'N/A') ?>
                                         </td>
-                                        <td style="color: #64748b;"><?= htmlspecialchars((string)($r['date_of_joining'] ?? '')) ?></td>
+                                        <td style="font-size: 0.8rem; font-weight: 700; color: #64748b;">
+                                            <?= htmlspecialchars((string)($r['staff_name'] ?? $r['faculty_email'] ?? 'System')) ?>
+                                        </td>
+                                        <td style="color: #64748b; font-size: 0.85rem;"><?= htmlspecialchars((string)($r['date_of_joining'] ?? '')) ?></td>
                                         <td>
                                             <a href="admission_registry.php?fetch=<?= urlencode((string)($r['receipt_no'] ?? '')) ?>" class="btn-designer btn-primary-designer" style="padding: 8px 15px; font-size: 0.7rem;">VIEW / MODIFY</a>
                                         </td>

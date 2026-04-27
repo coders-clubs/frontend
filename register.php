@@ -227,9 +227,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="premium-container">
         <div class="brand-panel">
             <img src="assets/logo.png" alt="NSCET Logo">
-            <div class="college-name">NADAR SARASWATHI</div>
-            <div class="college-tagline">College of Engineering</div>
-            <p style="opacity: 0.6; font-size: 0.9rem; max-width: 250px;">Join the academic orchestration team today.</p>
+            <div class="college-name" style="font-size: 1.6rem;">NADAR SARASWATHI COLLEGE OF ENGINEERING AND TECHNOLOGY</div>
+            <div class="college-tagline">Theni Melapettai Hindu Nadargal Uravinmurai</div>
+            <p style="opacity: 0.6; font-size: 0.8rem; max-width: 250px; margin-top: 20px;">Join the academic orchestration team today.</p>
         </div>
         
         <div class="login-panel">

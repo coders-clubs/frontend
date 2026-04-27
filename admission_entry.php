@@ -54,11 +54,11 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <div class="input-row">
                     <div class="field-box">
                         <label>Receipt No</label>
-                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required <?= !is_admin() ? 'readonly' : '' ?> style="font-weight: 800; color: var(--brand-navy); <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
+                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required readonly style="font-weight: 800; color: var(--brand-navy); background: #f1f5f9; cursor: not-allowed;">
                     </div>
                     <div class="field-box">
                         <label>Receipt Date</label>
-                        <input type="text" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" required <?= !is_admin() ? 'readonly' : '' ?> style="font-weight: 700; <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
+                        <input type="text" name="receipt_date" id="receipt_date" value="<?= date('Y-m-d') ?>" required readonly style="font-weight: 700; background: #f1f5f9; cursor: not-allowed;">
                     </div>
                     <div class="field-box">
                         <label>Admission Type</label>
@@ -184,7 +184,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <div class="input-row">
                     <div class="field-box">
                         <label>Application No</label>
-                        <input type="text" name="application_no" id="application_no" value="(Auto-generated)" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
+                        <input type="text" name="application_no" id="application_no" value="(Auto-generated)" readonly style="background: #f1f5f9; cursor: not-allowed;">
                     </div>
                     <div class="field-box">
                         <label>Degree *</label>
@@ -278,22 +278,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                             <label>Scan to Pay</label>
                             <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;" id="payment-qr">
                         </div>
-                        <div class="field-box" style="flex: 1;">
-                            <label>Transaction Ref No *</label>
-                            <div style="position: relative;">
-                                <input type="text" name="reference" id="reference" placeholder="Auto-fetch from scan..." required style="width: 100%; padding-right: 50px; <?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>" <?= !is_admin() ? 'readonly' : '' ?>>
-                                <?php if(is_admin()): ?>
-                                <button type="button" onclick="autoFetchRef()" id="scan-btn" style="position: absolute; right: 5px; top: 5px; bottom: 5px; background: #8b5cf6; border: none; color: #fff; border-radius: 8px; cursor: pointer; padding: 0 10px; font-size: 0.7rem; font-weight: 800;">
-                                  SCANNING...
-                                </button>
-                                <?php else: ?>
-                                <button type="button" onclick="autoFetchRef()" id="scan-btn" style="position: absolute; right: 5px; top: 5px; bottom: 5px; background: #8b5cf6; border: none; color: #fff; border-radius: 8px; cursor: pointer; padding: 0 10px; font-size: 0.7rem; font-weight: 800;">
-                                  SCANNING...
-                                </button>
-                                <?php endif; ?>
-                            </div>
-                            <p style="font-size: 0.65rem; color: #6d28d9; margin-top: 5px; font-weight: 600;" id="scan-status">Waiting for student to scan QR...</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -329,29 +313,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
         window.open('print_receipt.php?receipt_no=' + receiptNo, '_blank');
     }
 
-    function autoFetchRef() {
-        const btn = document.getElementById('scan-btn');
-        const status = document.getElementById('scan-status');
-        const refInput = document.getElementById('reference');
-        
-        btn.innerText = "WAITING...";
-        status.innerText = "Student scanning... please wait.";
-        status.style.color = "#10b981";
-
-        // Simulate a delay of 2.5 seconds for the "handshake"
-        setTimeout(() => {
-            const mockRef = 'UPI-' + Math.floor(1000000000 + Math.random() * 9000000000);
-            refInput.value = mockRef;
-            btn.innerText = "SYNCED";
-            btn.style.background = "#10b981";
-            status.innerText = "Verification Successful! Transaction Ref Sync Complete.";
-            status.style.color = "#059669";
-            
-            // Add a "success" glow to the input
-            refInput.style.borderColor = "#10b981";
-            refInput.style.background = "#fff";
-        }, 2500);
-    }
 
     const deptMap = {
         'B.E': ['CSE', 'ECE', 'MECHANICAL', 'CIVIL', 'EEE'],

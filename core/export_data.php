@@ -7,37 +7,29 @@ $endDate = $_GET['endDate'] ?? '';
 $center = $_GET['center'] ?? 'all';
 $faculty = $_GET['faculty'] ?? 'all';
 
-$query = "SELECT receipt_no, student_name, department, center, date_of_joining, created_at FROM admissions WHERE 1=1";
+$query = "SELECT a.receipt_no, a.student_name, a.department, a.center, u.name as staff_name, a.date_of_joining, a.created_at 
+          FROM admissions a 
+          LEFT JOIN users u ON a.faculty_email = u.email 
+          WHERE 1=1";
 $params = [];
 
 // If Faculty, restrict to their own records
 if (!is_admin()) {
-    $query .= " AND faculty_email = ?";
+    $query .= " AND a.faculty_email = ?";
     $params[] = $_SESSION['faculty_email'];
-    // Reset faculty filter to themselves just in case they tried to tamper with the URL
     $faculty = $_SESSION['faculty_email'];
 } else {
-    // Admin can filter by any faculty
     if ($faculty !== 'all') {
-        $query .= " AND faculty_email = ?";
+        $query .= " AND a.faculty_email = ?";
         $params[] = $faculty;
     }
 }
 
-if (!empty($startDate)) {
-    $query .= " AND DATE(created_at) >= ?";
-    $params[] = $startDate;
-}
-if (!empty($endDate)) {
-    $query .= " AND DATE(created_at) <= ?";
-    $params[] = $endDate;
-}
-if ($center !== 'all') {
-    $query .= " AND center = ?";
-    $params[] = $center;
-}
+if (!empty($startDate)) { $query .= " AND DATE(a.created_at) >= ?"; $params[] = $startDate; }
+if (!empty($endDate)) { $query .= " AND DATE(a.created_at) <= ?"; $params[] = $endDate; }
+if ($center !== 'all') { $query .= " AND a.center = ?"; $params[] = $center; }
 
-$query .= " ORDER BY created_at ASC";
+$query .= " ORDER BY a.created_at ASC";
 
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
@@ -58,12 +50,10 @@ header('Content-Disposition: attachment; filename=' . $filename);
 $output = fopen('php://output', 'w');
 
 // Professional Headers
-fputcsv($output, ['RECEIPT NO', 'STUDENT NAME', 'DEPARTMENT', 'ADMISSION CENTER', 'DATE OF JOINING', 'REGISTRATION DATE']);
+fputcsv($output, ['RECEIPT NO', 'STUDENT NAME', 'DEPARTMENT', 'ADMISSION CENTER', 'REGISTERED BY', 'DATE OF JOINING', 'REGISRATION DATE']);
 
 // Data
 foreach ($records as $row) {
-    // Optional: resolve center ID to Name for the CSV if needed?
-    // Current export shows 'nscet', maybe show 'NSCET'
     global $centers_list;
     $row['center'] = $centers_list[$row['center']] ?? $row['center'];
     fputcsv($output, $row);

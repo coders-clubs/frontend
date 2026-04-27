@@ -20,6 +20,11 @@
         <a href="reports.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
             <span>📊</span> <span>Reports (Export)</span>
         </a>
+        <?php if(is_admin()): ?>
+        <a href="progress_matrix.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'progress_matrix.php' ? 'active' : '' ?>">
+            <span>🧬</span> <span>Progress Matrix</span>
+        </a>
+        <?php endif; ?>
     </nav>
 
     <div class="sidebar-footer">

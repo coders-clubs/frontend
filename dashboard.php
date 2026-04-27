@@ -113,6 +113,109 @@ require_login();
                         <div class="card-accent"><?= is_admin() ? 'MANAGE ALL →' : 'VIEW ARCHIVE →' ?></div>
                     </a>
                 </div>
+                
+                <!-- GLOBAL CENTER PULSE (Admin Only) -->
+                <?php if(is_admin()): ?>
+                <div class="section-wrapper stagger-4" style="background: var(--brand-navy); border-radius: 28px; padding: 40px; margin-bottom: 40px; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <div>
+                            <h2 style="color: var(--brand-gold); font-size: 1.8rem; letter-spacing: -1px;">Institutional Center Pulse</h2>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 600;">Real-time velocity tracking across all 10 admission centers</p>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;">
+                                GLOBAL OVERVIEW
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 50px;">
+                        <?php
+                        $stmtGlobal = $pdo->query("SELECT center, COUNT(*) as total, SUM(CASE WHEN receipt_date = CURRENT_DATE THEN 1 ELSE 0 END) as today FROM admissions GROUP BY center");
+                        $global_stats = [];
+                        while($row = $stmtGlobal->fetch()) { $global_stats[$row['center']] = $row; }
+                        
+                        foreach($centers_list as $id => $name): 
+                            $stats = $global_stats[$id] ?? ['total' => 0, 'today' => 0];
+                            $max_goal = 200; // Arbitrary center goal for visualization
+                            $pct = min(100, round(($stats['total'] / $max_goal) * 100));
+                        ?>
+                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; transition: all 0.3s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-gold); max-width: 120px;"><?= htmlspecialchars($name) ?></span>
+                                <span style="background: var(--brand-gold); color: var(--brand-navy); font-size: 0.6rem; padding: 3px 8px; border-radius: 8px; font-weight: 900;">+<?= $stats['today'] ?> TODAY</span>
+                            </div>
+                            <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Outfit'; margin-bottom: 5px;"><?= $stats['total'] ?></div>
+                            <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px;">
+                                <div style="width: <?= $pct ?>%; height: 100%; background: var(--brand-gold); border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- INTERCONNECTED MASTER PROGRESS MATRIX (Embedded) -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px;">
+                        <h3 style="color: var(--brand-gold); font-size: 1.2rem; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                            <span>🧬</span> Master Progress Matrix (Center vs Department)
+                        </h3>
+                        <div style="overflow-x: auto; width: 100%;">
+                            <style>
+                                .dash-matrix { width: 100%; border-collapse: separate; border-spacing: 4px; color: white; min-width: 1000px; }
+                                .dash-matrix th { padding: 12px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center; }
+                                .dash-matrix td { padding: 15px; border-radius: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+                                .m-cell { background: rgba(255,255,255,0.02); }
+                                .m-val { display: block; font-family: 'Outfit'; font-weight: 800; font-size: 1.1rem; }
+                                .m-lbl { font-size: 0.5rem; text-transform: uppercase; opacity: 0.4; }
+                                .m-intensity-high { background: var(--brand-gold); color: var(--brand-navy); }
+                                .m-intensity-med { background: rgba(251, 191, 36, 0.2); color: var(--brand-gold); border-color: var(--brand-gold); }
+                            </style>
+                            <?php
+                            $target_depts = ['B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural'];
+                            $stmtMatrix = $pdo->query("SELECT center, department, COUNT(*) as total FROM admissions GROUP BY center, department");
+                            $matrix_raw = $stmtMatrix->fetchAll();
+                            $matrix_data = [];
+                            foreach($matrix_raw as $row) {
+                                foreach($target_depts as $td) {
+                                    if (stripos($row['department'], trim(str_ireplace(['B.E', 'B.Tech', 'M.E'], '', $td))) !== false) {
+                                        $matrix_data[$row['center']][$td] = ($matrix_data[$row['center']][$td] ?? 0) + $row['total']; break;
+                                    }
+                                }
+                            }
+                            ?>
+                            <table class="dash-matrix">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; background: transparent; color: white;">Department</th>
+                                        <?php foreach($centers_list as $id => $name): ?>
+                                        <th><?= htmlspecialchars($name) ?></th>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($target_depts as $dept): ?>
+                                    <tr>
+                                        <td style="text-align: left; font-weight: 700; font-size: 0.75rem; background: rgba(255,255,255,0.05);"><?= $dept ?></td>
+                                        <?php foreach($centers_list as $cid => $cname): 
+                                            $val = $matrix_data[$cid][$dept] ?? 0;
+                                            $intensity = ($val > 15) ? 'm-intensity-high' : (($val > 0) ? 'm-intensity-med' : '');
+                                        ?>
+                                        <td class="m-cell <?= $intensity ?>">
+                                            <span class="m-val"><?= $val ?></span>
+                                            <span class="m-lbl">SOLD</span>
+                                        </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 20px; text-align: right;">
+                            <a href="progress_matrix.php" style="color: var(--brand-gold); font-size: 0.7rem; font-weight: 800; text-decoration: none; letter-spacing: 1px;">EXPLORE FULL INTERACTIVE MATRIX →</a>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
 
                 <!-- ADMISSION PULSE SECTION -->
                 <?php
@@ -144,62 +247,116 @@ require_login();
                             <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;">Velocity & enrollment tracking for <?= htmlspecialchars($_SESSION['selected_center_name']) ?></p>
                         </div>
                         
-                        <form method="GET" style="display: flex; gap: 8px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 20px; border: 1px solid #e2e8f0;">
-                            <button type="submit" name="pulse_filter" value="today" class="btn-designer <?= $filter == 'today' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Today</button>
-                            <button type="submit" name="pulse_filter" value="yesterday" class="btn-designer <?= $filter == 'yesterday' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Yesterday</button>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px; padding-left: 12px; border-left: 2px solid #cbd5e1;">
-                                <input type="date" name="pulse_date" value="<?= $filter_date ?>" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 0.75rem; font-weight: 700;">
-                                <button type="submit" name="pulse_filter" value="date" class="btn-designer <?= $filter == 'date' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Explore</button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <!-- Interactive Tabs -->
+                            <div style="background: #f1f5f9; padding: 5px; border-radius: 12px; display: flex; gap: 5px; border: 1px solid #e2e8f0;">
+                                <button type="button" class="btn-designer tab-btn active" onclick="switchPulse('overall')" id="btn-overall" style="padding: 10px 20px; font-size: 0.65rem; border-radius: 8px;">📊 OVERALL</button>
+                                <button type="button" class="btn-designer tab-btn" onclick="switchPulse('mq')" id="btn-mq" style="padding: 10px 20px; font-size: 0.65rem; border-radius: 8px; color: #b45309;">🏢 MANAGEMENT</button>
                             </div>
-                            <a href="dashboard.php" class="btn-designer btn-ghost" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Reset</a>
-                        </form>
+
+                            <form method="GET" style="display: flex; gap: 8px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 20px; border: 1px solid #e2e8f0;">
+                                <button type="submit" name="pulse_filter" value="today" class="btn-designer <?= $filter == 'today' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Today</button>
+                                <button type="submit" name="pulse_filter" value="yesterday" class="btn-designer <?= $filter == 'yesterday' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Yesterday</button>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-left: 12px; padding-left: 12px; border-left: 2px solid #cbd5e1;">
+                                    <input type="date" name="pulse_date" value="<?= $filter_date ?>" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 0.75rem; font-weight: 700;">
+                                    <button type="submit" name="pulse_filter" value="date" class="btn-designer <?= $filter == 'date' ? 'btn-primary-designer' : 'btn-ghost' ?>" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Explore</button>
+                                </div>
+                                <a href="dashboard.php" class="btn-designer btn-ghost" style="padding: 10px 18px; font-size: 0.65rem; border-radius: 14px;">Reset</a>
+                            </form>
+                        </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px;">
-                        <?php
-                        $seat_capacity = 60; 
-                        // Corrected Query: Combine Degree and Department for accurate pulse tracking
-                        $stmtHeat = $pdo->prepare("SELECT CONCAT(degree, ' ', department) as dept_key, COUNT(*) as count FROM admissions $sqlFilter GROUP BY degree, department");
-                        $stmtHeat->execute($params);
-                        $heat_data = $stmtHeat->fetchAll(PDO::FETCH_KEY_PAIR);
-                        
-                        // Unified mapping to match admission_entry.php options
-                        $target_depts = [
-                            'B.E CSE', 'B.E MECHANICAL', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 
-                            'B.Tech IT', 'B.Tech AI&DS', 'M.E Structural Engineering'
-                        ];
-                        
-                        foreach($target_depts as $dept):
-                            $count = $heat_data[$dept] ?? 0;
-                            // Also try soft matching (e.g. "B.E Mech" vs "B.E MECHANICAL")
-                            if ($count == 0) {
-                                foreach($heat_data as $key => $val) {
-                                    if (stripos($key, str_replace('B.E ', '', $dept)) !== false) {
-                                        $count = $val; break;
+                    <div id="pulse-overall-view">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px;">
+                            <?php
+                            $seat_capacity = 60; 
+                            // Total Pulse Query
+                            $stmtHeat = $pdo->prepare("SELECT CONCAT(degree, ' ', department) as dept_key, COUNT(*) as count FROM admissions $sqlFilter GROUP BY degree, department");
+                            $stmtHeat->execute($params);
+                            $heat_data = $stmtHeat->fetchAll(PDO::FETCH_KEY_PAIR);
+                            
+                            $target_depts = [
+                                'B.E CSE', 'B.E MECHANICAL', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 
+                                'B.Tech IT', 'B.Tech AI&DS', 'M.E Structural Engineering'
+                            ];
+                            
+                            foreach($target_depts as $dept):
+                                $count = $heat_data[$dept] ?? 0;
+                                if ($count == 0) {
+                                    foreach($heat_data as $key => $val) {
+                                        if (stripos($key, str_replace('B.E ', '', $dept)) !== false) {
+                                            $count = $val; break;
+                                        }
                                     }
                                 }
-                            }
+                                $percent = min(100, round(($count / $seat_capacity) * 100));
+                                $color = ($percent > 85) ? '#e11d48' : (($percent > 50) ? '#f59e0b' : '#10b981');
+                            ?>
+                            <div style="background:#f8fafc; padding:25px; border-radius:24px; border:1px solid #e2e8f0; transition: all 0.3s ease;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
+                                    <span style="font-weight: 800; font-size: 0.85rem; color: var(--brand-navy);"><?= $dept ?></span>
+                                    <span style="font-size: 0.75rem; font-weight: 800; color: <?= $color ?>; background: white; padding: 4px 10px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                        <?= $count ?>
+                                    </span>
+                                </div>
+                                <div style="height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px;">
+                                    <div style="width: <?= $percent ?>%; height: 100%; background: <?= $color ?>; border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                                    <span>TOTAL LOAD</span>
+                                    <span><?= $percent ?>%</span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
 
-                            $percent = min(100, round(($count / $seat_capacity) * 100));
-                            $color = ($percent > 85) ? '#e11d48' : (($percent > 50) ? '#f59e0b' : '#10b981');
-                        ?>
-                        <div style="background:#f8fafc; padding:25px; border-radius:22px; border:1px solid #e2e8f0; transition: all 0.3s ease;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
-                                <span style="font-weight: 800; font-size: 0.8rem; color: var(--brand-navy);"><?= $dept ?></span>
-                                <span style="font-size: 0.75rem; font-weight: 800; color: <?= $color ?>; background: white; padding: 4px 10px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                                    <?= $count ?>
-                                </span>
-                            </div>
-                            <div style="height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px;">
-                                <div style="width: <?= $percent ?>%; height: 100%; background: <?= $color ?>; border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-                                <span><?= ($filter == 'today' || $filter == 'yesterday' || $filter == 'date') ? 'DAILY VELOCITY' : 'TOTAL LOAD' ?></span>
-                                <span><?= $percent ?>%</span>
+                    <div id="pulse-mq-view" style="display: none;">
+                        <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 18px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 1.5rem;">🏢</div>
+                            <div>
+                                <h3 style="color: #92400e; font-size: 1rem; margin: 0;">Management Quota Pulse</h3>
+                                <p style="color: #b45309; font-size: 0.7rem; font-weight: 600; margin: 0;">Real-time tracking of institutional management segment</p>
                             </div>
                         </div>
-                        <?php endforeach; ?>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px;">
+                            <?php
+                            $sqlMQFilter = $sqlFilter . " AND quota = 'Management'";
+                            $stmtMQHeat = $pdo->prepare("SELECT CONCAT(degree, ' ', department) as dept_key, COUNT(*) as count FROM admissions $sqlMQFilter GROUP BY degree, department");
+                            $stmtMQHeat->execute($params);
+                            $mq_heat_data = $stmtMQHeat->fetchAll(PDO::FETCH_KEY_PAIR);
+                            
+                            $mq_capacity = 30;
+                            foreach($target_depts as $dept):
+                                $mq_count = $mq_heat_data[$dept] ?? 0;
+                                if ($mq_count == 0) {
+                                    foreach($mq_heat_data as $key => $val) {
+                                        if (stripos($key, str_replace('B.E ', '', $dept)) !== false) {
+                                            $mq_count = $val; break;
+                                        }
+                                    }
+                                }
+                                $percent = min(100, round(($mq_count / $mq_capacity) * 100));
+                            ?>
+                            <div style="background:#fffbeb; padding:25px; border-radius:24px; border:1px solid #fde68a; transition: all 0.3s ease;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
+                                    <span style="font-weight: 800; font-size: 0.85rem; color: #92400e;"><?= $dept ?></span>
+                                    <span style="font-size: 0.8rem; font-weight: 900; color: #b45309; background: white; padding: 6px 12px; border-radius: 12px; border: 1px solid #fde68a;">
+                                        <?= $mq_count ?>
+                                    </span>
+                                </div>
+                                <div style="height: 10px; background: #fef3c7; border-radius: 10px; overflow: hidden; margin-bottom: 12px; border: 1px solid #fde68a;">
+                                    <div style="width: <?= $percent ?>%; height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 10px;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.6rem; color: #92400e; font-weight: 800; text-transform: uppercase;">
+                                    <span>MQ UTILIZATION</span>
+                                    <span><?= $percent ?>%</span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="stat-banner stagger-5">
@@ -220,5 +377,15 @@ require_login();
         </div>
     </main>
 </div>
+
+<script>
+    function switchPulse(type) {
+        document.getElementById('pulse-overall-view').style.display = (type === 'overall' ? 'block' : 'none');
+        document.getElementById('pulse-mq-view').style.display = (type === 'mq' ? 'block' : 'none');
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'btn-primary-designer'));
+        document.getElementById('btn-' + type).classList.add('active', 'btn-primary-designer');
+    }
+</script>
 </body>
 </html>
