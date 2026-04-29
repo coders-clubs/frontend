@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->commit();
             if (($_POST['record_type'] ?? 'Application') === 'Enquiry') {
-                header("Location: ../admission_entry.php?msg=" . urlencode("Enquiry Saved Successfully!"));
+                header("Location: ../enquiry_entry.php?msg=" . urlencode("Enquiry Saved Successfully!"));
             } else {
                 header("Location: ../print_receipt.php?receipt_no=" . $receipt_no);
             }
@@ -141,7 +141,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $pdo->commit();
-            header("Location: ../" . ($action === 'update_advanced' ? 'admission_registry.php' : 'admission_entry.php') . "?msg=Record updated successfully.");
+            $redirect_target = 'admission_entry.php';
+            if ($action === 'update_advanced') {
+                $redirect_target = 'admission_registry.php';
+            } elseif (($_POST['record_type'] ?? '') === 'Enquiry') {
+                $redirect_target = 'enquiry_entry.php';
+            }
+            header("Location: ../" . $redirect_target . "?msg=Record updated successfully.");
             exit;
         }
 

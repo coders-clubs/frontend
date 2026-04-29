@@ -17,7 +17,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admission Entry | NSCET</title>
+    <title>Enquiry Entry | NSCET</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body class="designer-animate">
@@ -29,7 +29,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
             <?php include 'branding.php'; ?>
             
             <div class="page-hero no-print" style="margin-bottom: 40px;">
-                <h1>Student Admission</h1>
+                <h1>Student Enquiry</h1>
             </div>
 
 <div class="form-container">
@@ -40,30 +40,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <?= htmlspecialchars($_GET['msg']) ?>
             </div>
         <?php endif; ?>
-
-        <!-- FETCH ENQUIRY SECTION AT TOP -->
-        <div id="fetch-enquiry-section" style="background: #0f172a; padding: 30px; margin-bottom: 40px; border-radius: 18px; color: white;">
-            <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700;">FETCH ENQUIRY</h2>
-            <p style="margin-bottom: 20px; opacity: 0.95; font-size: 14px;">Search for existing enquiries by Student Name, Father's Name, or Date of Birth</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end;">
-                <div>
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Student Name</label>
-                    <input type="text" id="fetch_student_name" placeholder="Student Name" style="width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Father's Name</label>
-                    <input type="text" id="fetch_father_name" placeholder="Father's Name" style="width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Date of Birth (dd-mm-yyyy)</label>
-                    <input type="text" id="fetch_dob" placeholder="dd-mm-yyyy" style="width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px;">
-                </div>
-                <button type="button" class="btn-designer" onclick="fetchEnquiry()" style="background: #fbbf24; color: #0f172a; font-weight: 700; padding: 10px 25px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">FETCH ENQUIRY</button>
-            </div>
-            
-            <div id="fetch-results" style="margin-top: 20px;"></div>
-        </div>
 
         <form id="admissionForm" action="core/admission_handler.php" method="POST">
             <input type="hidden" name="action_type" id="action_type" value="save">
@@ -79,8 +55,8 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 <div class="input-row">
                     <div class="field-box">
                         <label>Record Type</label>
-                        <input type="text" value="Application" readonly style="font-weight: 700; background: #f1f5f9; cursor: not-allowed;">
-                        <input type="hidden" name="record_type" id="record_type" value="Application">
+                        <input type="text" value="Enquiry" readonly style="font-weight: 700; background: #f1f5f9; cursor: not-allowed;">
+                        <input type="hidden" name="record_type" id="record_type" value="Enquiry">
                     </div>
                     <div class="field-box">
                         <label>Receipt Date</label>
@@ -314,51 +290,10 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 </div>
             </div>
 
-            <!-- SECTION 05: PAYMENT & TRANSACTION -->
-            <div class="section-wrapper section-payment" id="payment-section-container">
-                <div class="section-label">
-                    <div class="section-number">05</div>
-                    <div class="section-title">Application Fee Payment</div>
-                </div>
-                
-                <div class="input-row" style="background: #fff; padding: 25px; border-radius: 12px; border: 2px solid #ddd6fe;">
-                    <div class="field-box" style="flex: 1;">
-                        <label>Payment Method</label>
-                        <div style="background: #ede9fe; color: #7c3aed; padding: 12px; border-radius: 10px; text-align: center; font-weight: 800; letter-spacing: 1px;">
-                            ONLINE / UPI ONLY
-                            <input type="hidden" name="bill_type" value="Online">
-                        </div>
-                    </div>
-                    
-                    <div style="flex: 2; display: flex; gap: 20px; align-items: center; border-left: 1px solid #ddd6fe; padding-left: 20px;">
-                        <div class="field-box" style="text-align: center;" id="qr-container">
-                            <label>Scan to Pay</label>
-                            <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;" id="payment-qr">
-                        </div>
-                        <div class="field-box" style="flex: 1;" id="transaction-container">
-                            <label>Transaction ID *</label>
-                            <input type="text" name="transaction_id" id="transaction_id" placeholder="Enter UPI / UTR No" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="action-strip no-print">
                 <button type="button" class="btn-designer btn-ghost" onclick="setMode('add')">ADD NEW</button>
-                <button type="button" class="btn-designer btn-ghost" style="color: #0ea5e9; border-color: #bae6fd;" onclick="enableFetchEnquiry()">FETCH ENQUIRY</button>
                 <button type="button" class="btn-designer btn-accent-designer" onclick="enableModify()">SEARCH / MODIFY</button>
-                <button type="submit" class="btn-designer btn-primary-designer" id="saveBtn">SUBMIT REGISTRATION</button>
-                <button type="button" class="btn-designer btn-success-designer" onclick="printOfficialReceipt()">PRINT RECEIPT</button>
-            </div>
-
-            <div id="fetch-enquiry-bar" style="display:none; margin-top:40px; border-top: 2px dashed #bae6fd; padding-top: 40px;" class="no-print">
-                 <div class="field-box" style="max-width: 500px; margin: 0 auto; text-align: center;">
-                    <label style="color: #0284c7;">Enter Enquiry Receipt No to Import Details</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="search_enquiry_no" placeholder="Search by NS-xxxx or Name" style="flex: 1; border-color: #bae6fd;">
-                        <button type="button" class="btn-designer" style="background: #0ea5e9; color: white; padding: 10px 20px;" onclick="fetchEnquiryRecord()">IMPORT NOW</button>
-                    </div>
-                 </div>
+                <button type="submit" class="btn-designer btn-primary-designer" id="saveBtn">SAVE ENQUIRY</button>
             </div>
 
             <div id="modify-search-bar" style="display:none; margin-top:40px; border-top: 2px dashed #e2e8f0; padding-top: 40px;" class="no-print">
@@ -380,76 +315,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
         const m = document.getElementById('middle_name').value;
         const l = document.getElementById('last_name').value;
         document.getElementById('student_name').value = [f, m, l].filter(Boolean).join(' ');
-    }
-
-    function enableFetchEnquiry() {
-        const bar = document.getElementById('fetch-enquiry-bar');
-        if (bar) {
-            bar.style.display = (bar.style.display === 'none') ? 'block' : 'none';
-            if (bar.style.display === 'block') {
-                document.getElementById('search_enquiry_no').focus();
-            }
-        }
-    }
-
-    function fetchEnquiryRecord() {
-        const searchVal = document.getElementById('search_enquiry_no').value.trim();
-        if (!searchVal) return alert("Please enter an Enquiry No or Name to search.");
-
-        fetch(`core/admission_fetch.php?search=${searchVal}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'multiple') {
-                    let msg = "Multiple records found. Please search again using the exact Receipt No from these options:\n\n";
-                    data.records.forEach(r => {
-                        msg += `- ${r.receipt_no} : ${r.student_name} (${r.department || 'N/A'})\n`;
-                    });
-                    alert(msg);
-                } else if (data.status === 'success') {
-                    const r = data.record;
-                    if (r.record_type !== 'Enquiry') {
-                        if(!confirm("This record is an Application, not an Enquiry. Import anyway?")) return;
-                    }
-                    
-                    // Map fields except id, action_type, receipt_no, application_no, transaction_id
-                    const fields = [
-                        'admission_type', 'student_name', 'gender', 'father_name', 
-                        'mother_name', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 
-                        'religion', 'community', 'caste', 'father_occupation', 'mother_occupation',
-                        'quota', 'reg_no', 
-                        'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no',
-                        'school_name', 'percentage', 'scheme_7_5', 'first_graduate'
-                    ];
-                    
-                    fields.forEach(f => {
-                        const el = document.getElementById(f);
-                        if (el) el.value = r[f] || '';
-                    });
-                    
-                    if (r.degree) {
-                        updateDepts();
-                        document.getElementById('department').value = r.department || '';
-                    }
-                    
-                    if (r.student_name) {
-                        const nameParts = r.student_name.split(' ');
-                        if (nameParts.length > 0) document.getElementById('first_name').value = nameParts[0];
-                        if (nameParts.length > 1) document.getElementById('last_name').value = nameParts[nameParts.length - 1];
-                        if (nameParts.length > 2) document.getElementById('middle_name').value = nameParts.slice(1, -1).join(' ');
-                    }
-                    
-                    if (r.date_of_birth) document.getElementById('date_of_birth').value = r.date_of_birth;
-
-                    document.getElementById('fetch-enquiry-bar').style.display = 'none';
-                    alert("Enquiry data imported successfully. Please complete the remaining fields.");
-                } else {
-                    alert("No record found for: " + searchVal);
-                }
-            })
-            .catch(err => {
-                console.error("Fetch Error:", err);
-                alert("Error connecting to server. Please try again.");
-            });
     }
 
     function toggleRecordType() {
@@ -505,135 +370,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
             document.getElementById('pincode').value = pincodeMap[found];
         }
     }
-
-    function fetchEnquiry() {
-        const studentName = document.getElementById('fetch_student_name').value.trim();
-        const fatherName = document.getElementById('fetch_father_name').value.trim();
-        const dob = document.getElementById('fetch_dob').value.trim();
-
-        if (!studentName && !fatherName && !dob) {
-            alert("Please enter at least one search criteria: Student Name, Father's Name, or Date of Birth");
-            document.getElementById('fetch-results').innerHTML = '';
-            return;
-        }
-
-        let searchQuery = '';
-        if (studentName) searchQuery = studentName;
-        else if (fatherName) searchQuery = fatherName;
-        else if (dob) searchQuery = dob;
-
-        document.getElementById('fetch-results').innerHTML = '<p style="color: white; font-size: 14px;">Searching...</p>';
-
-        fetch(`core/admission_fetch.php?search=${encodeURIComponent(searchQuery)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'multiple') {
-                    let resultHTML = '<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">';
-                    resultHTML += '<p style="color: white; margin: 0 0 10px 0; font-weight: 600;">Multiple records found. Click to select:</p>';
-                    resultHTML += '<div style="display: flex; flex-direction: column; gap: 10px;">';
-                    
-                    data.records.forEach((record, idx) => {
-                        resultHTML += `<button type="button" style="background: white; color: #667eea; padding: 10px 15px; border: none; border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s ease;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='white'" onclick="loadEnquiry('${record.receipt_no}')">
-                            ${record.receipt_no} | ${record.student_name} | DOB: ${record.date_of_birth}
-                        </button>`;
-                    });
-                    resultHTML += '</div></div>';
-                    document.getElementById('fetch-results').innerHTML = resultHTML;
-                } else if (data.status === 'success') {
-                    loadEnquiryData(data.record);
-                    document.getElementById('fetch-results').innerHTML = '<p style="color: white; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">✓ Record loaded successfully!</p>';
-                } else {
-                    document.getElementById('fetch-results').innerHTML = '<p style="color: #ffd700; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">No records found for your search criteria.</p>';
-                }
-            })
-            .catch(err => {
-                console.error("Fetch Error:", err);
-                document.getElementById('fetch-results').innerHTML = '<p style="color: #ff6b6b; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">Error searching records. Please try again.</p>';
-            });
-    }
-
-    function loadEnquiry(receiptNo) {
-        fetch(`core/admission_fetch.php?search=${encodeURIComponent(receiptNo)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    loadEnquiryData(data.record);
-                    document.getElementById('fetch-results').innerHTML = '<p style="color: white; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">✓ Record loaded successfully!</p>';
-                }
-            })
-            .catch(err => console.error("Load Error:", err));
-    }
-
-    function loadEnquiryData(record) {
-        // Set action to update
-        document.getElementById('action_type').value = 'update';
-        document.getElementById('existing_id').value = record.id;
-        document.getElementById('saveBtn').innerText = 'UPDATE ADMISSION';
-
-        // Split student name into first, middle, last
-        const nameParts = (record.student_name || '').trim().split(/\s+/);
-        if (nameParts.length > 0) {
-            document.getElementById('first_name').value = nameParts[0];
-            if (nameParts.length === 2) {
-                document.getElementById('last_name').value = nameParts[1];
-                document.getElementById('middle_name').value = '';
-            } else if (nameParts.length > 2) {
-                document.getElementById('middle_name').value = nameParts.slice(1, -1).join(' ');
-                document.getElementById('last_name').value = nameParts[nameParts.length - 1];
-            }
-            updateFullName();
-        }
-
-        // Populate other fields
-        const fields = [
-            'receipt_no', 'admission_type', 'gender', 'date_of_birth', 'exam_no',
-            'father_name', 'mother_name', 'father_occupation', 'mother_occupation',
-            'address', 'city', 'pincode', 'cell_1', 'cell_2',
-            'religion', 'community', 'caste', 'application_no', 'quota', 'reg_no',
-            'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no',
-            'school_name', 'percentage', 'place_of_school', 'scheme_7_5', 'first_graduate'
-        ];
-        
-        fields.forEach(f => {
-            const el = document.getElementById(f);
-            if (el && record[f]) {
-                el.value = record[f];
-            }
-        });
-
-        // Update departments if degree is set
-        if (record.degree) {
-            updateDepts();
-            const deptEl = document.getElementById('department');
-            if (deptEl && record.department) {
-                deptEl.value = record.department;
-            }
-        }
-
-        // Clear search fields after loading
-        document.getElementById('fetch_student_name').value = '';
-        document.getElementById('fetch_father_name').value = '';
-        document.getElementById('fetch_dob').value = '';
-
-        // Scroll to form
-        document.querySelector('.page-hero').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Allow Enter key to trigger fetch
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInputs = ['fetch_student_name', 'fetch_father_name', 'fetch_dob'];
-        searchInputs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        fetchEnquiry();
-                    }
-                });
-            }
-        });
-    });
 </script>
 <script src="assets/js/script.js"></script>
         </div>

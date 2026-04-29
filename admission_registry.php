@@ -198,14 +198,25 @@ if (!isset($_SESSION['selected_center'])) {
                             </div>
                         </div>
                         
-                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 15px; display: block;">MARK DETAILS</label>                        <table class="marks-table">
+                        <!-- ACADEMIC MARKS SECTION -->
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 15px; display: block;">ACADEMIC MARKS</label>
+                        <table class="marks-table">
                             <thead><tr><th>Subjects</th><th>Marks Obtained</th></tr></thead>
-                            <tbody id="marks-body">
-                                <tr><td><input type="text" name="subject[]" value="Mathematics"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value="Physics"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value="Chemistry"></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value=""></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
-                                <tr><td><input type="text" name="subject[]" value=""></td><td><input type="number" name="obt[]" class="obt-m"></td></tr>
+                            <tbody id="academic-marks-body">
+                                <tr><td><input type="text" name="academic_subject[]" value="Mathematics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m"></td></tr>
+                                <tr><td><input type="text" name="academic_subject[]" value="Physics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m"></td></tr>
+                                <tr><td><input type="text" name="academic_subject[]" value="Chemistry" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m"></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- OCCASIONAL MARKS SECTION -->
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 25px; display: block;">OCCASIONAL MARKS</label>
+                        <table class="marks-table">
+                            <thead><tr><th>Subjects</th><th>Marks Obtained</th></tr></thead>
+                            <tbody id="occasional-marks-body">
+                                <tr><td><input type="text" name="occasional_subject[]" value="Theory 1" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m"></td></tr>
+                                <tr><td><input type="text" name="occasional_subject[]" value="Practical" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m"></td></tr>
+                                <tr><td><input type="text" name="occasional_subject[]" value="Mathematics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m"></td></tr>
                             </tbody>
                         </table>
                         <button type="button" class="btn-designer btn-ghost" style="margin-top:10px; width:100%; border: 1px dashed #cbd5e1;" onclick="addMarkRow()">+ ADD SUBJECT</button>
@@ -321,24 +332,31 @@ if (!isset($_SESSION['selected_center'])) {
     };
 
     function addMarkRow() {
-        const tbody = document.getElementById('marks-body');
+        const tbody = document.getElementById('occasional-marks-body');
         const row = document.createElement('tr');
-        row.innerHTML = '<td><input type="text" name="subject[]"></td><td><input type="number" name="obt[]" class="obt-m"></td>';
+        row.innerHTML = '<td><input type="text" name="occasional_subject[]"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m"></td>';
         tbody.appendChild(row);
         attachMarkListeners();
     }
 
     function attachMarkListeners() {
-        document.querySelectorAll('.obt-m').forEach(input => {
-            input.oninput = () => {
-                let totalObt = 0;
-                const obts = document.querySelectorAll('.obt-m');
-                obts.forEach(i => totalObt += (Number(i.value) || 0));
-                
-                document.getElementById('grand-total').innerText = totalObt;
+        // Calculate total from both academic and occasional marks
+        const calculateTotal = () => {
+            let totalObt = 0;
+            document.querySelectorAll('.academic-obt-m, .occasional-obt-m').forEach(i => {
+                totalObt += (Number(i.value) || 0);
+            });
+            document.getElementById('grand-total').innerText = totalObt;
+        };
 
-                // Auto-calculation disabled as per user request for manual entering
-            };
+        // Attach listeners to academic marks
+        document.querySelectorAll('.academic-obt-m').forEach(input => {
+            input.oninput = calculateTotal;
+        });
+
+        // Attach listeners to occasional marks
+        document.querySelectorAll('.occasional-obt-m').forEach(input => {
+            input.oninput = calculateTotal;
         });
     }
     attachMarkListeners();
@@ -362,7 +380,7 @@ if (!isset($_SESSION['selected_center'])) {
                     const marks = data.marks || [];
                     
                     document.getElementById('advanced_id').value = r.id;
-                    const fields = ['receipt_no', 'application_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'mother_name', 'father_occupation', 'mother_occupation', 'religion', 'community', 'caste', 'state', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'bus_route_no', 'date_of_joining', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop', 'cutoff', 'record_type', 'transaction_id', 'scheme_7_5', 'place_of_school', 'exam_no'];
+                    const fields = ['receipt_no', 'application_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'mother_name', 'father_occupation', 'mother_occupation', 'religion', 'community', 'caste', 'state', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'bus_route_no', 'date_of_joining', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop', 'cutoff', 'record_type', 'transaction_id', 'scheme_7_5', 'place_of_school', 'exam_no', 'first_graduate'];
                     fields.forEach(f => {
                          const el = document.getElementById(f);
                          if(el) el.value = r[f] || '';
@@ -374,22 +392,41 @@ if (!isset($_SESSION['selected_center'])) {
                         if (radio) radio.checked = true;
                     }
 
-                    // Build Marks Table
-                    const tbody = document.getElementById('marks-body');
-                    tbody.innerHTML = ''; // Clear
-                    if (marks.length === 0) {
-                        addMarkRow(); addMarkRow(); addMarkRow(); addMarkRow(); addMarkRow();
-                    } else {
-                        marks.forEach(m => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `<td><input type="text" name="subject[]" value="${m.subject}"></td>
-                                             <td><input type="number" name="obt[]" class="obt-m" value="${m.obt}"></td>`;
-                            tbody.appendChild(row);
+                    // Build Marks Tables - Academic and Occasional
+                    const academicTbody = document.getElementById('academic-marks-body');
+                    const occasionalTbody = document.getElementById('occasional-marks-body');
+                    
+                    // Reset tables to default structure
+                    academicTbody.innerHTML = `
+                        <tr><td><input type="text" name="academic_subject[]" value="Mathematics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m" value="0"></td></tr>
+                        <tr><td><input type="text" name="academic_subject[]" value="Physics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m" value="0"></td></tr>
+                        <tr><td><input type="text" name="academic_subject[]" value="Chemistry" readonly style="background: #f1f5f9;"></td><td><input type="number" name="academic_obt[]" class="academic-obt-m" value="0"></td></tr>
+                    `;
+                    
+                    occasionalTbody.innerHTML = `
+                        <tr><td><input type="text" name="occasional_subject[]" value="Theory 1" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m" value="0"></td></tr>
+                        <tr><td><input type="text" name="occasional_subject[]" value="Practical" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m" value="0"></td></tr>
+                        <tr><td><input type="text" name="occasional_subject[]" value="Mathematics" readonly style="background: #f1f5f9;"></td><td><input type="number" name="occasional_obt[]" class="occasional-obt-m" value="0"></td></tr>
+                    `;
+                    
+                    // Populate marks if they exist
+                    if (marks.length > 0) {
+                        marks.forEach((m, idx) => {
+                            if (idx < 3 && academicTbody.rows[idx]) {
+                                // Academic marks
+                                const input = academicTbody.rows[idx].querySelector('input[class="academic-obt-m"]');
+                                if (input) input.value = m.obt || 0;
+                            } else if (idx >= 3 && idx < 6 && occasionalTbody.rows[idx - 3]) {
+                                // Occasional marks
+                                const input = occasionalTbody.rows[idx - 3].querySelector('input[class="occasional-obt-m"]');
+                                if (input) input.value = m.obt || 0;
+                            }
                         });
                     }
+                    
                     attachMarkListeners();
                     // Trigger first calculation
-                    const firstObt = document.querySelector('.obt-m');
+                    const firstObt = document.querySelector('.academic-obt-m, .occasional-obt-m');
                     if (firstObt) firstObt.dispatchEvent(new Event('input'));
                     
                     alert("Student details & marks fetched! You can now verify or update.");

@@ -100,6 +100,12 @@ require_login();
                         <p>Initialize student profiles.</p>
                         <div class="card-accent">INITIATE FLOW →</div>
                     </a>
+                    <a href="enquiry_entry.php" class="elite-card stagger-2">
+                        <div style="font-size: 2rem; margin-bottom: 15px;">🔍</div>
+                        <h3>Enquiry Form</h3>
+                        <p>Capture initial student enquiries.</p>
+                        <div class="card-accent">NEW ENQUIRY →</div>
+                    </a>
                     <a href="admission_registry.php" class="elite-card stagger-3">
                         <div style="font-size: 2rem; margin-bottom: 15px;">📋</div>
                         <h3>Registry Master</h3>

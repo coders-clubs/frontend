@@ -11,6 +11,9 @@
         <a href="admission_entry.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'admission_entry.php' ? 'active' : '' ?>">
             <span>📝</span> <span>Admission Entry</span>
         </a>
+        <a href="enquiry_entry.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'enquiry_entry.php' ? 'active' : '' ?>">
+            <span>🔍</span> <span>Enquiry Form</span>
+        </a>
         <a href="admission_registry.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'admission_registry.php' ? 'active' : '' ?>">
             <span>📋</span> <span>Registry Master</span>
         </a>

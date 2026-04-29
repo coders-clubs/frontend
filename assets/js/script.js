@@ -65,7 +65,7 @@ function fetchRecord() {
                     'receipt_no', 'admission_type', 'student_name', 'gender', 'father_name', 
                     'mother_name', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 
                     'religion', 'community', 'caste', 'father_occupation', 'mother_occupation',
-                    'application_no', 'department', 'quota', 'reg_no', 
+                    'application_no', 'quota', 'reg_no', 
                     'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no',
                     'school_name', 'percentage'
                 ];
@@ -74,6 +74,12 @@ function fetchRecord() {
                     const el = document.getElementById(f);
                     if (el) el.value = r[f] || '';
                 });
+
+                if (r.degree && typeof updateDepts === 'function') {
+                    updateDepts();
+                    const deptEl = document.getElementById('department');
+                    if (deptEl) deptEl.value = r.department || '';
+                }
                 
                 alert("Student data fetched successfully. You can now modify and update.");
             } else {
