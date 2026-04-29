@@ -189,6 +189,7 @@ $records = $stmt->fetchAll();
                                     <th>Receipt No</th>
                                     <th>Student Name</th>
                                     <th>Program / Dept</th>
+                                    <th>Type</th>
                                     <th>Admission Center</th>
                                     <th>Registered By</th>
                                     <th>Date</th>
@@ -201,6 +202,16 @@ $records = $stmt->fetchAll();
                                         <td><?= htmlspecialchars((string)($r['receipt_no'] ?? '')) ?></td>
                                         <td><?= htmlspecialchars((string)($r['student_name'] ?? '')) ?></td>
                                         <td><span class="badge-dept"><?= htmlspecialchars((string)($r['department'] ?? '')) ?></span></td>
+                                        <td>
+                                            <?php 
+                                            $rType = $r['record_type'] ?? 'Application';
+                                            if ($rType === 'Enquiry') {
+                                                echo '<span style="background: #fff7ed; color: #c2410c; padding: 6px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; border: 1px solid #fed7aa; text-transform: uppercase; letter-spacing: 1px;">ENQUIRY</span>';
+                                            } else {
+                                                echo '<span style="background: #f0fdf4; color: #15803d; padding: 6px 12px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; border: 1px solid #bbf7d0; text-transform: uppercase; letter-spacing: 1px;">APPLICATION</span>';
+                                            }
+                                            ?>
+                                        </td>
                                         <td style="font-weight: 600; font-size: 0.8rem; color: var(--brand-navy);">
                                             <?= htmlspecialchars($centers_list[$r['center']] ?? $r['center'] ?? 'N/A') ?>
                                         </td>

@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
             $application_no = 'STUDENT-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 
-            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center, reg_no, school_name, percentage, receipt_date) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO admissions (receipt_no, application_no, admission_type, student_name, gender, date_of_birth, father_name, father_occupation, mother_name, mother_occupation, address, city, pincode, cell_1, cell_2, religion, community, caste, degree, department, date_of_joining, quota, hostel, concession, bus_stop, bill_type, reference, faculty_email, center, reg_no, school_name, percentage, receipt_date, record_type, transaction_id, scheme_7_5, place_of_school, exam_no) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['bill_type'] ?? 'Cash', $_POST['reference'] ?? '',
                 $faculty_email, $_SESSION['selected_center'] ?? '',
                 $_POST['reg_no'] ?? '', $_POST['school_name'] ?? '', $_POST['percentage'] ?? 0,
-                !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : date('Y-m-d')
+                !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : date('Y-m-d'),
+                $_POST['record_type'] ?? 'Application', $_POST['transaction_id'] ?? '', $_POST['scheme_7_5'] ?? 'No', $_POST['place_of_school'] ?? '', $_POST['exam_no'] ?? ''
             ]);
             
             $new_student_id = $pdo->lastInsertId();
@@ -74,26 +75,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $pdo->commit();
-            header("Location: ../print_receipt.php?receipt_no=" . $receipt_no);
+            if (($_POST['record_type'] ?? 'Application') === 'Enquiry') {
+                header("Location: ../admission_entry.php?msg=" . urlencode("Enquiry Saved Successfully!"));
+            } else {
+                header("Location: ../print_receipt.php?receipt_no=" . $receipt_no);
+            }
             exit;
 
         } elseif ($action === 'update_advanced' || $action === 'update') {
             $id = $_POST['existing_id'];
             
             $sql = "UPDATE admissions SET 
-                    admission_type = ?, student_name = ?, gender = ?, date_of_birth = ?, father_name = ?, caste = ?, 
-                    state = ?, address = ?, place = ?, cell_1 = ?, reg_no = ?, department = ?, school_name = ?, 
+                    admission_type = ?, student_name = ?, gender = ?, date_of_birth = ?, father_name = ?, mother_name = ?, father_occupation = ?, mother_occupation = ?, caste = ?, 
+                    state = ?, address = ?, place = ?, city = ?, pincode = ?, cell_1 = ?, cell_2 = ?, religion = ?, community = ?, reg_no = ?, department = ?, school_name = ?, 
                     percentage = ?, reference = ?, reference_name = ?, hostel = ?, uravinmurai_letter = ?, 
-                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?, concession = ?, cell_2 = ?, bus_stop = ?
+                    fees_name = ?, amount = ?, bill_type = ?, degree = ?, receipt_date = ?, date_of_joining = ?, quota = ?, concession = ?, bus_stop = ?,
+                    record_type = ?, transaction_id = ?, scheme_7_5 = ?, place_of_school = ?, exam_no = ?
                     WHERE id = ? AND faculty_email = ?";
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 $_POST['admission_type'] ?? 'Regular', $_POST['student_name'] ?? '', $_POST['gender'] ?? '', 
                 !empty($_POST['date_of_birth']) ? $_POST['date_of_birth'] : null, 
-                $_POST['father_name'] ?? '', $_POST['caste'] ?? '', $_POST['state'] ?? 'Tamil Nadu', 
-                $_POST['address'] ?? '', $_POST['place'] ?? '', 
-                $_POST['cell_1'] ?? '', $_POST['reg_no'] ?? '', $_POST['department'] ?? '', $_POST['school_name'] ?? '', 
+                $_POST['father_name'] ?? '', $_POST['mother_name'] ?? '', $_POST['father_occupation'] ?? '', $_POST['mother_occupation'] ?? '', $_POST['caste'] ?? '', $_POST['state'] ?? 'Tamil Nadu', 
+                $_POST['address'] ?? '', $_POST['place'] ?? '', $_POST['city'] ?? '', $_POST['pincode'] ?? '',
+                $_POST['cell_1'] ?? '', $_POST['cell_2'] ?? '', $_POST['religion'] ?? '', $_POST['community'] ?? '', $_POST['reg_no'] ?? '', $_POST['department'] ?? '', $_POST['school_name'] ?? '', 
                 $_POST['percentage'] ?? 0, 
                 $_POST['reference'] ?? '', $_POST['reference_name'] ?? '', $_POST['hostel'] ?? 'No', 
                 $_POST['uravinmurai_letter'] ?? 'No', 
@@ -101,7 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 !empty($_POST['receipt_date']) ? $_POST['receipt_date'] : null,
                 !empty($_POST['date_of_joining']) ? $_POST['date_of_joining'] : null,
                 $_POST['quota'] ?? 'Merit', $_POST['concession'] ?? '', 
-                $_POST['cell_2'] ?? '', $_POST['bus_stop'] ?? '',
+                $_POST['bus_stop'] ?? '',
+                $_POST['record_type'] ?? 'Application', $_POST['transaction_id'] ?? '', $_POST['scheme_7_5'] ?? 'No', $_POST['place_of_school'] ?? '', $_POST['exam_no'] ?? '',
                 $id, $faculty_email
             ]);
 

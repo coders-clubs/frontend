@@ -19,6 +19,9 @@ $is_all_centers = (is_admin() && $report_center === 'all');
 $report_date = $_GET['report_date'] ?? date('Y-m-d');
 $report_date_display = date('d F Y', strtotime($report_date));
 
+// Record Type Filter
+$record_type_filter = $_GET['record_type'] ?? 'Application';
+
 // Prepare SQL Snippets
 $center_where = "";
 $params_cumul = [];
@@ -33,18 +36,18 @@ if (!$is_all_centers) {
 
 // 2. DATA FETCHING
 // A. Date-wise Counts (Filtered by selected Date and Center)
-$stmtDateWise = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE receipt_date = :rdate $center_where GROUP BY department, degree");
-$stmtDateWise->execute(array_merge(['rdate' => $report_date], $params_cumul));
+$stmtDateWise = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE receipt_date = :rdate AND record_type = :rtype $center_where GROUP BY department, degree");
+$stmtDateWise->execute(array_merge(['rdate' => $report_date, 'rtype' => $record_type_filter], $params_cumul));
 $date_rows = $stmtDateWise->fetchAll();
 
 // B. Cumulative Counts (Filtered by Center)
-$stmtCumul = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE 1=1 $center_where GROUP BY department, degree");
-$stmtCumul->execute($params_cumul);
+$stmtCumul = $pdo->prepare("SELECT department, degree, COUNT(*) as count FROM admissions WHERE record_type = :rtype $center_where GROUP BY department, degree");
+$stmtCumul->execute(array_merge(['rtype' => $record_type_filter], $params_cumul));
 $cumul_rows = $stmtCumul->fetchAll();
 
 // C. Quota-wise Counts (Management vs Counselling)
-$stmtQuota = $pdo->prepare("SELECT department, quota, COUNT(*) as count FROM admissions WHERE 1=1 $center_where GROUP BY department, quota");
-$stmtQuota->execute($params_cumul);
+$stmtQuota = $pdo->prepare("SELECT department, quota, COUNT(*) as count FROM admissions WHERE record_type = :rtype $center_where GROUP BY department, quota");
+$stmtQuota->execute(array_merge(['rtype' => $record_type_filter], $params_cumul));
 $quota_raw = $stmtQuota->fetchAll();
 $quota_data = [];
 foreach($quota_raw as $qr) {
@@ -81,7 +84,7 @@ function getQuota($quotaData, $displayDept, $type) {
 
 // Fixed Dept List
 $depts = [
-    'B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural'
+    'B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural Engineering', 'M.E Manufacturing Engineering'
 ];
 
 $dateUG = 0; $datePG = 0;
@@ -165,7 +168,7 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
             <?php include 'branding.php'; ?>
             
             <div class="report-title-box text-center">
-                <h2>ADMISSION SOLD STATUS REPORT</h2>
+                <h2><?= $record_type_filter === 'Enquiry' ? 'ENQUIRY STATUS REPORT' : 'ADMISSION SOLD STATUS REPORT' ?></h2>
                 <p style="font-weight: bold;">Admission Center: <?= htmlspecialchars($display_center_name) ?></p>
                 <p>Report Context: <?= $report_date_display ?></p>
             </div>
@@ -189,10 +192,10 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
             <div class="report-card web-only">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
                     <div>
-                        <h1 style="font-size: 2rem; color: var(--brand-navy);">Admission Sold Status</h1>
+                        <h1 style="font-size: 2rem; color: var(--brand-navy);"><?= $record_type_filter === 'Enquiry' ? 'Enquiry Status' : 'Admission Sold Status' ?></h1>
                         <p style="color: #64748b; font-weight: 600;">Viewing: <?= htmlspecialchars($display_center_name) ?> | <?= $report_date_display ?></p>
                     </div>
-                    <button class="btn-designer btn-primary-designer no-print" onclick="window.print()">🖨️ PRINT FORMAL REPORT</button>
+                    <button type="button" class="btn-designer btn-primary-designer no-print" onclick="exportTableToExcel('exportTable', 'Admission_Report_<?= htmlspecialchars($report_date) ?>')">📥 DOWNLOAD EXCEL SHEET</button>
                 </div>
 
                 <!-- FILTER FORM -->
@@ -200,7 +203,7 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
                     <?php if(is_admin()): ?>
                     <div style="flex: 1; min-width: 200px;">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Institutional Center</label>
-                        <select name="center" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 600; font-family: inherit;">
+                        <select name="center" onchange="this.form.submit()" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 600; font-family: inherit;">
                             <option value="all" <?= $report_center == 'all' ? 'selected' : '' ?>>All Centers (Combined)</option>
                             <?php foreach($centers_list as $id => $name): ?>
                                 <option value="<?= $id ?>" <?= $report_center == $id ? 'selected' : '' ?>><?= $name ?></option>
@@ -210,9 +213,16 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
                     <?php endif; ?>
                     <div style="flex: 1; min-width: 200px;">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Report Date</label>
-                        <input type="date" name="report_date" value="<?= $report_date ?>" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 600; font-family: inherit;">
+                        <input type="date" name="report_date" value="<?= $report_date ?>" onchange="this.form.submit()" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 600; font-family: inherit;">
                     </div>
-                    <button type="submit" class="btn-designer btn-primary-designer" style="padding: 14px 30px; border-radius: 14px;">Generate Report</button>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Record Type</label>
+                        <select name="record_type" onchange="this.form.submit()" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 600; font-family: inherit;">
+                            <option value="Application" <?= $record_type_filter == 'Application' ? 'selected' : '' ?>>Applications</option>
+                            <option value="Enquiry" <?= $record_type_filter == 'Enquiry' ? 'selected' : '' ?>>Enquiries</option>
+                        </select>
+                    </div>
+
                     <a href="reports.php" class="btn-designer btn-ghost" style="padding: 14px 20px; border-radius: 14px; text-decoration: none; border: 1px solid #e2e8f0; background: white; font-size: 0.8rem;">Reset Filters</a>
                 </form>
 
@@ -274,8 +284,8 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
 
             </div>
 
-            <!-- FORMAL TABLE (Print Only) -->
-            <table class="formal-table">
+            <!-- FORMAL TABLE (Export Target) -->
+            <table class="formal-table" id="exportTable">
                 <thead>
                     <tr>
                         <th rowspan="2">S.No</th>
@@ -344,5 +354,37 @@ $display_center_name = $is_all_centers ? "All Admission Centers" : ($centers_lis
         </div>
     </main>
 </div>
+
+<script>
+function exportTableToExcel(tableID, filename = 'Report'){
+    var table = document.getElementById(tableID);
+    var html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            table { border-collapse: collapse; width: 100%; font-family: sans-serif; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+        </style>
+        <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${filename}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+    </head>
+    <body>
+        <h2><?= $record_type_filter === 'Enquiry' ? 'Enquiry Report' : 'Admission Report' ?> - <?= htmlspecialchars($display_center_name) ?> (${filename})</h2>
+        ${table.outerHTML}
+    </body>
+    </html>`;
+
+    var blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename + ".xls";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+</script>
+
 </body>
 </html>

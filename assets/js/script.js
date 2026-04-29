@@ -48,7 +48,13 @@ function fetchRecord() {
     fetch(`core/admission_fetch.php?search=${searchVal}`)
         .then(res => res.json())
         .then(data => {
-            if (data.status === 'success') {
+            if (data.status === 'multiple') {
+                let msg = "Multiple records found. Please search again using the exact Receipt No from these options:\n\n";
+                data.records.forEach(r => {
+                    msg += `- ${r.receipt_no} : ${r.student_name} (${r.department || 'N/A'})\n`;
+                });
+                alert(msg);
+            } else if (data.status === 'success') {
                 const r = data.record;
                 document.getElementById('action_type').value = 'update';
                 document.getElementById('existing_id').value = r.id;
@@ -59,7 +65,7 @@ function fetchRecord() {
                     'receipt_no', 'admission_type', 'student_name', 'gender', 'father_name', 
                     'mother_name', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 
                     'religion', 'community', 'caste', 'father_occupation', 'mother_occupation',
-                    'application_no', 'department', 'quota', 'concession', 'reg_no', 
+                    'application_no', 'department', 'quota', 'reg_no', 
                     'date_of_joining', 'degree', 'hostel', 'bus_stop', 'bus_route_no',
                     'school_name', 'percentage'
                 ];

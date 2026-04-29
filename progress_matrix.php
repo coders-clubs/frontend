@@ -6,44 +6,59 @@ require_admin();
 // Matrix Configuration
 $target_depts = [
     'B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 
-    'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural'
+    'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural Engineering', 'M.E Manufacturing Engineering'
 ];
 
+$record_type_filter = $_GET['record_type'] ?? 'Application';
+
 // 1. FETCH MATRIX DATA
-$stmtMatrix = $pdo->query("SELECT center, department, COUNT(*) as total 
-                         FROM admissions 
-                         GROUP BY center, department");
+$stmtMatrix = $pdo->prepare("SELECT center, degree, department, COUNT(*) as total 
+                         FROM admissions WHERE record_type = ? 
+                         GROUP BY center, degree, department");
+$stmtMatrix->execute([$record_type_filter]);
 $matrix_raw = $stmtMatrix->fetchAll();
 
 $matrix_data = [];
 foreach($matrix_raw as $row) {
-    // Find the closest matching dept from our official list
     $matched_dept = null;
-    foreach($target_depts as $td) {
-        if (stripos($row['department'], trim(str_ireplace(['B.E', 'B.Tech', 'M.E'], '', $td))) !== false) {
-            $matched_dept = $td;
-            break;
-        }
+    $deg = trim($row['degree']);
+    $dep = trim($row['department']);
+
+    if ($deg === 'B.E') {
+        if (stripos($dep, 'CSE') !== false) $matched_dept = 'B.E CSE';
+        elseif (stripos($dep, 'ECE') !== false) $matched_dept = 'B.E ECE';
+        elseif (stripos($dep, 'MECH') !== false) $matched_dept = 'B.E Mech';
+        elseif (stripos($dep, 'CIVIL') !== false) $matched_dept = 'B.E CIVIL';
+        elseif (stripos($dep, 'EEE') !== false) $matched_dept = 'B.E EEE';
+    } elseif ($deg === 'B.Tech') {
+        if (stripos($dep, 'IT') !== false) $matched_dept = 'B.Tech IT';
+        elseif (stripos($dep, 'AI') !== false) $matched_dept = 'B.Tech AI & DS';
+    } elseif ($deg === 'M.E') {
+        if (stripos($dep, 'Structural') !== false) $matched_dept = 'M.E Structural Engineering';
+        elseif (stripos($dep, 'Manufacturing') !== false) $matched_dept = 'M.E Manufacturing Engineering';
     }
+
     if($matched_dept) {
         $matrix_data[$row['center']][$matched_dept] = ($matrix_data[$row['center']][$matched_dept] ?? 0) + $row['total'];
     }
 }
 
 // 2. FETCH HOURLY PULSE (Today's velocity)
-$stmtVelocity = $pdo->query("SELECT center, COUNT(*) as today 
+$stmtVelocity = $pdo->prepare("SELECT center, COUNT(*) as today 
                            FROM admissions 
-                           WHERE receipt_date = CURRENT_DATE 
+                           WHERE receipt_date = CURRENT_DATE AND record_type = ?
                            GROUP BY center");
+$stmtVelocity->execute([$record_type_filter]);
 $velocity_data = $stmtVelocity->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // 3. GLOBAL STATS
-$stmtTotal = $pdo->query("SELECT 
+$stmtTotal = $pdo->prepare("SELECT 
     COUNT(*) as total,
     SUM(CASE WHEN degree LIKE 'B.%' THEN 1 ELSE 0 END) as ug_total,
     SUM(CASE WHEN degree LIKE 'M.%' THEN 1 ELSE 0 END) as pg_total,
     SUM(CASE WHEN quota = 'Management' THEN 1 ELSE 0 END) as mq_total
-    FROM admissions");
+    FROM admissions WHERE record_type = ?");
+$stmtTotal->execute([$record_type_filter]);
 $global = $stmtTotal->fetch();
 
 ?>
@@ -84,11 +99,18 @@ $global = $stmtTotal->fetch();
         <div class="dash-container">
             <?php include 'branding.php'; ?>
 
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
                 <div>
-                    <h1 style="font-size: 2.2rem; color: var(--brand-navy); letter-spacing: -1px;">Interconnected Progress Matrix</h1>
+                    <h1 style="font-size: 2.2rem; color: var(--brand-navy); letter-spacing: -1px;"><?= $record_type_filter === 'Enquiry' ? 'Enquiry Matrix' : 'Interconnected Progress Matrix' ?></h1>
                     <p style="color: var(--text-secondary); font-weight: 600;">Real-time simultaneous tracking across all centers and departments</p>
                 </div>
+                
+                <form method="GET" style="display: flex; align-items: center; gap: 15px;">
+                    <select name="record_type" onchange="this.form.submit()" style="padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: 800; font-family: inherit; font-size: 0.8rem; text-transform: uppercase; color: var(--brand-navy); outline: none;">
+                        <option value="Application" <?= $record_type_filter == 'Application' ? 'selected' : '' ?>>Applications</option>
+                        <option value="Enquiry" <?= $record_type_filter == 'Enquiry' ? 'selected' : '' ?>>Enquiries</option>
+                    </select>
+                </form>
                 <div style="display: flex; gap: 15px;">
                     <div class="stat-card-mini" style="border-left: 4px solid var(--brand-navy);">
                         <span class="label">UG Cumulative</span>
@@ -173,25 +195,7 @@ $global = $stmtTotal->fetch();
                 </table>
             </div>
 
-            <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <div class="designer-card" style="padding: 30px;">
-                    <h3 style="margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
-                        <span>📶</span> Registration Velocity Insight
-                    </h3>
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <?php foreach($velocity_data as $cid => $today_count): ?>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;"><?= $centers_list[$cid] ?></span>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="height: 6px; width: 100px; background: #f1f5f9; border-radius: 10px; overflow: hidden;">
-                                    <div style="height: 100%; width: <?= min(100, $today_count * 10) ?>%; background: #10b981;"></div>
-                                </div>
-                                <span style="font-weight: 800; color: #10b981; font-size: 0.9rem;">+<?= $today_count ?></span>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
+            <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr; gap: 30px;">
 
                 <div class="designer-card" style="padding: 30px; background: var(--brand-navy); color: white;">
                     <h3 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--brand-gold);">

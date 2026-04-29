@@ -51,10 +51,14 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                     <div class="section-number">01</div>
                     <div class="section-title">Institutional Context</div>
                 </div>
+                <input type="hidden" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>">
                 <div class="input-row">
                     <div class="field-box">
-                        <label>Receipt No</label>
-                        <input type="text" name="receipt_no" id="receipt_no" value="<?= $auto_receipt_no ?>" required readonly style="font-weight: 800; color: var(--brand-navy); background: #f1f5f9; cursor: not-allowed;">
+                        <label>Record Type *</label>
+                        <select name="record_type" id="record_type" required onchange="toggleRecordType()">
+                            <option value="Application">Application</option>
+                            <option value="Enquiry">Enquiry</option>
+                        </select>
                     </div>
                     <div class="field-box">
                         <label>Receipt Date</label>
@@ -67,6 +71,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                             <option value="Regular">Regular</option>
                             <option value="Lateral">Lateral Entry</option>
                             <option value="Transfer">Transfer</option>
+                            <option value="PG">PG</option>
                         </select>
                     </div>
                 </div>
@@ -80,10 +85,22 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 </div>
                 
                 <div class="input-row">
-                    <div class="field-box" style="flex: 2;">
-                        <label>Student Name *</label>
-                        <input type="text" name="student_name" id="student_name" required placeholder="Legal full name">
+                    <div class="field-box">
+                        <label>First Name *</label>
+                        <input type="text" id="first_name" required oninput="this.value = this.value.toUpperCase(); updateFullName()">
                     </div>
+                    <div class="field-box">
+                        <label>Middle Name</label>
+                        <input type="text" id="middle_name" oninput="this.value = this.value.toUpperCase(); updateFullName()">
+                    </div>
+                    <div class="field-box">
+                        <label>Last Name (Initial) *</label>
+                        <input type="text" id="last_name" required oninput="this.value = this.value.toUpperCase(); updateFullName()">
+                    </div>
+                    <input type="hidden" name="student_name" id="student_name">
+                </div>
+                
+                <div class="input-row">
                     <div class="field-box">
                         <label>Gender *</label>
                         <select name="gender" id="gender" required>
@@ -95,6 +112,10 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                     <div class="field-box">
                         <label>Date of Birth *</label>
                         <input type="date" name="date_of_birth" id="date_of_birth" required>
+                    </div>
+                    <div class="field-box">
+                        <label>Exam No. (Reg No)</label>
+                        <input type="text" name="exam_no" id="exam_no" oninput="this.value = this.value.toUpperCase();">
                     </div>
                 </div>
                 
@@ -163,7 +184,7 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                             <option value="">Select</option>
                             <option value="OC">OC</option>
                             <option value="BC">BC</option>
-                            <option value="MBC">MBC</option>
+                            <option value="MBC/DNC">MBC/DNC</option>
                             <option value="SC/ST">SC/ST</option>
                         </select>
                     </div>
@@ -208,12 +229,26 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                         <label>School Name</label>
                         <input type="text" name="school_name" id="school_name" placeholder="Last studied institution">
                     </div>
+                    <div class="field-box" style="flex: 1;">
+                        <label>Place of School</label>
+                        <input type="text" name="place_of_school" id="place_of_school">
+                    </div>
+                </div>
+                
+                <div class="input-row">
                     <div class="field-box">
                         <label>Quota</label>
                         <select name="quota" id="quota">
                             <option value="Merit">Counselling</option>
                             <option value="Management">Management</option>
                             <option value="Sports">Sports</option>
+                        </select>
+                    </div>
+                    <div class="field-box">
+                        <label>7.5% Scheme</label>
+                        <select name="scheme_7_5" id="scheme_7_5">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
                         </select>
                     </div>
                 </div>
@@ -229,13 +264,6 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                     <div class="field-box">
                         <label>Date of Joining</label>
                         <input type="date" name="date_of_joining" id="date_of_joining" value="<?= date('Y-m-d') ?>">
-                    </div>
-                    <div class="field-box">
-                        <label>Concession</label>
-                        <select name="concession" id="concession">
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
                     </div>
                 </div>
                 <div class="input-row">
@@ -257,11 +285,11 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                 </div>
             </div>
 
-            <!-- SECTION 05: ENQUIRY FEE PAYMENT -->
-            <div class="section-wrapper section-payment">
+            <!-- SECTION 05: PAYMENT & TRANSACTION -->
+            <div class="section-wrapper section-payment" id="payment-section-container">
                 <div class="section-label">
                     <div class="section-number">05</div>
-                    <div class="section-title">Enquiry Fee Payment</div>
+                    <div class="section-title">Application Fee Payment</div>
                 </div>
                 
                 <div class="input-row" style="background: #fff; padding: 25px; border-radius: 12px; border: 2px solid #ddd6fe;">
@@ -274,9 +302,13 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
                     </div>
                     
                     <div style="flex: 2; display: flex; gap: 20px; align-items: center; border-left: 1px solid #ddd6fe; padding-left: 20px;">
-                        <div class="field-box" style="text-align: center;">
+                        <div class="field-box" style="text-align: center;" id="qr-container">
                             <label>Scan to Pay</label>
                             <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px;" id="payment-qr">
+                        </div>
+                        <div class="field-box" style="flex: 1;" id="transaction-container">
+                            <label>Transaction ID *</label>
+                            <input type="text" name="transaction_id" id="transaction_id" placeholder="Enter UPI / UTR No" required>
                         </div>
                     </div>
                 </div>
@@ -303,6 +335,30 @@ $auto_receipt_no = 'NS-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 </div>
 
 <script>
+    function updateFullName() {
+        const f = document.getElementById('first_name').value;
+        const m = document.getElementById('middle_name').value;
+        const l = document.getElementById('last_name').value;
+        document.getElementById('student_name').value = [f, m, l].filter(Boolean).join(' ');
+    }
+
+    function toggleRecordType() {
+        const type = document.getElementById('record_type').value;
+        const paymentSection = document.getElementById('payment-section-container');
+        const submitBtn = document.getElementById('saveBtn');
+        const transactionInput = document.getElementById('transaction_id');
+        
+        if (type === 'Enquiry') {
+            paymentSection.style.display = 'none';
+            submitBtn.innerText = 'SAVE ENQUIRY';
+            transactionInput.required = false;
+        } else {
+            paymentSection.style.display = 'block';
+            submitBtn.innerText = 'SUBMIT REGISTRATION';
+            transactionInput.required = true;
+        }
+    }
+
     const AUTO_FETCH = "<?= htmlspecialchars($_GET['fetch'] ?? '') ?>";
     function printOfficialReceipt() {
         const receiptNo = document.getElementById('receipt_no').value;

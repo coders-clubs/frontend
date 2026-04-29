@@ -122,21 +122,44 @@ require_login();
                             <h2 style="color: var(--brand-gold); font-size: 1.8rem; letter-spacing: -1px;">Institutional Center Pulse</h2>
                             <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 600;">Real-time velocity tracking across all 10 admission centers</p>
                         </div>
-                        <div style="display: flex; gap: 12px; align-items: center;">
+                        <?php
+                        $stmtGlobal = $pdo->query("
+                            SELECT 
+                                center, 
+                                COUNT(*) as total, 
+                                SUM(CASE WHEN receipt_date = CURRENT_DATE THEN 1 ELSE 0 END) as today,
+                                SUM(CASE WHEN hostel = 'Yes' AND gender = 'Male' THEN 1 ELSE 0 END) as h_male,
+                                SUM(CASE WHEN hostel = 'Yes' AND gender = 'Female' THEN 1 ELSE 0 END) as h_female
+                            FROM admissions 
+                            WHERE record_type = 'Application' 
+                            GROUP BY center
+                        ");
+                        $global_stats = [];
+                        $grand_h_male = 0;
+                        $grand_h_female = 0;
+                        while($row = $stmtGlobal->fetch()) { 
+                            $global_stats[$row['center']] = $row; 
+                            $grand_h_male += $row['h_male'];
+                            $grand_h_female += $row['h_female'];
+                        }
+                        ?>
+                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                             <div style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;">
                                 GLOBAL OVERVIEW
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px;">
+                                <span style="font-size: 0.7rem; font-weight: 800; color: var(--brand-gold); text-transform: uppercase;">ALL CENTERS HOSTEL</span>
+                                <div style="display: flex; gap: 10px;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.8);">Boys: <b style="color: white;"><?= $grand_h_male ?? 0 ?></b></span>
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.8);">Girls: <b style="color: white;"><?= $grand_h_female ?? 0 ?></b></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 50px;">
-                        <?php
-                        $stmtGlobal = $pdo->query("SELECT center, COUNT(*) as total, SUM(CASE WHEN receipt_date = CURRENT_DATE THEN 1 ELSE 0 END) as today FROM admissions GROUP BY center");
-                        $global_stats = [];
-                        while($row = $stmtGlobal->fetch()) { $global_stats[$row['center']] = $row; }
-                        
-                        foreach($centers_list as $id => $name): 
-                            $stats = $global_stats[$id] ?? ['total' => 0, 'today' => 0];
+                        <?php foreach($centers_list as $id => $name): 
+                            $stats = $global_stats[$id] ?? ['total' => 0, 'today' => 0, 'h_male' => 0, 'h_female' => 0];
                             $max_goal = 200; // Arbitrary center goal for visualization
                             $pct = min(100, round(($stats['total'] / $max_goal) * 100));
                         ?>
@@ -146,6 +169,10 @@ require_login();
                                 <span style="background: var(--brand-gold); color: var(--brand-navy); font-size: 0.6rem; padding: 3px 8px; border-radius: 8px; font-weight: 900;">+<?= $stats['today'] ?> TODAY</span>
                             </div>
                             <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Outfit'; margin-bottom: 5px;"><?= $stats['total'] ?></div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 700; text-transform: uppercase;">
+                                <span>Hostel Boys: <b style="color: white;"><?= $stats['h_male'] ?></b></span>
+                                <span>Hostel Girls: <b style="color: white;"><?= $stats['h_female'] ?></b></span>
+                            </div>
                             <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px;">
                                 <div style="width: <?= $pct ?>%; height: 100%; background: var(--brand-gold); border-radius: 10px;"></div>
                             </div>
@@ -153,76 +180,16 @@ require_login();
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- INTERCONNECTED MASTER PROGRESS MATRIX (Embedded) -->
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px;">
-                        <h3 style="color: var(--brand-gold); font-size: 1.2rem; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                            <span>🧬</span> Master Progress Matrix (Center vs Department)
-                        </h3>
-                        <div style="overflow-x: auto; width: 100%;">
-                            <style>
-                                .dash-matrix { width: 100%; border-collapse: separate; border-spacing: 4px; color: white; min-width: 1000px; }
-                                .dash-matrix th { padding: 12px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center; }
-                                .dash-matrix td { padding: 15px; border-radius: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-                                .m-cell { background: rgba(255,255,255,0.02); }
-                                .m-val { display: block; font-family: 'Outfit'; font-weight: 800; font-size: 1.1rem; }
-                                .m-lbl { font-size: 0.5rem; text-transform: uppercase; opacity: 0.4; }
-                                .m-intensity-high { background: var(--brand-gold); color: var(--brand-navy); }
-                                .m-intensity-med { background: rgba(251, 191, 36, 0.2); color: var(--brand-gold); border-color: var(--brand-gold); }
-                            </style>
-                            <?php
-                            $target_depts = ['B.E CSE', 'B.E Mech', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 'B.Tech IT', 'B.Tech AI & DS', 'M.E Structural'];
-                            $stmtMatrix = $pdo->query("SELECT center, department, COUNT(*) as total FROM admissions GROUP BY center, department");
-                            $matrix_raw = $stmtMatrix->fetchAll();
-                            $matrix_data = [];
-                            foreach($matrix_raw as $row) {
-                                foreach($target_depts as $td) {
-                                    if (stripos($row['department'], trim(str_ireplace(['B.E', 'B.Tech', 'M.E'], '', $td))) !== false) {
-                                        $matrix_data[$row['center']][$td] = ($matrix_data[$row['center']][$td] ?? 0) + $row['total']; break;
-                                    }
-                                }
-                            }
-                            ?>
-                            <table class="dash-matrix">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: left; background: transparent; color: white;">Department</th>
-                                        <?php foreach($centers_list as $id => $name): ?>
-                                        <th><?= htmlspecialchars($name) ?></th>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach($target_depts as $dept): ?>
-                                    <tr>
-                                        <td style="text-align: left; font-weight: 700; font-size: 0.75rem; background: rgba(255,255,255,0.05);"><?= $dept ?></td>
-                                        <?php foreach($centers_list as $cid => $cname): 
-                                            $val = $matrix_data[$cid][$dept] ?? 0;
-                                            $intensity = ($val > 15) ? 'm-intensity-high' : (($val > 0) ? 'm-intensity-med' : '');
-                                        ?>
-                                        <td class="m-cell <?= $intensity ?>">
-                                            <span class="m-val"><?= $val ?></span>
-                                            <span class="m-lbl">SOLD</span>
-                                        </td>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div style="margin-top: 20px; text-align: right;">
-                            <a href="progress_matrix.php" style="color: var(--brand-gold); font-size: 0.7rem; font-weight: 800; text-decoration: none; letter-spacing: 1px;">EXPLORE FULL INTERACTIVE MATRIX →</a>
-                        </div>
-                    </div>
+
                 </div>
                 <?php endif; ?>
-
 
                 <!-- ADMISSION PULSE SECTION -->
                 <?php
                 $filter = $_GET['pulse_filter'] ?? 'today';
                 $filter_date = $_GET['pulse_date'] ?? date('Y-m-d');
                 
-                $sqlFilter = "WHERE center = :center";
+                $sqlFilter = "WHERE center = :center AND record_type = 'Application'";
                 $displayLabel = "";
                 $params = ['center' => $_SESSION['selected_center']];
                 
@@ -266,6 +233,37 @@ require_login();
                         </div>
                     </div>
 
+                    <?php
+                    // Calculate Summary for the current pulse filter
+                    $stmtSum = $pdo->prepare("
+                        SELECT 
+                            SUM(CASE WHEN quota IN ('Government', 'Counselling') THEN 1 ELSE 0 END) as gq_count,
+                            SUM(CASE WHEN quota = 'Management' THEN 1 ELSE 0 END) as mq_count,
+                            SUM(CASE WHEN hostel = 'Yes' AND gender = 'Male' THEN 1 ELSE 0 END) as hostel_male,
+                            SUM(CASE WHEN hostel = 'Yes' AND gender = 'Female' THEN 1 ELSE 0 END) as hostel_female
+                        FROM admissions $sqlFilter
+                    ");
+                    $stmtSum->execute($params);
+                    $pulse_sum = $stmtSum->fetch(PDO::FETCH_ASSOC);
+                    ?>
+                    <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 25px; border-radius: 12px; display: flex; align-items: center; gap: 15px;">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Counselling</span>
+                            <span style="font-size: 1.4rem; font-weight: 800; color: var(--brand-navy);"><?= $pulse_sum['gq_count'] ?? 0 ?></span>
+                        </div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 25px; border-radius: 12px; display: flex; align-items: center; gap: 15px;">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Management</span>
+                            <span style="font-size: 1.4rem; font-weight: 800; color: var(--brand-navy);"><?= $pulse_sum['mq_count'] ?? 0 ?></span>
+                        </div>
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 12px 25px; border-radius: 12px; display: flex; align-items: center; gap: 20px; box-shadow: 0 2px 4px rgba(14,165,233,0.05);">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; border-right: 2px solid #bae6fd; padding-right: 20px;">Hostels</span>
+                            <div style="display: flex; gap: 15px;">
+                                <span style="font-size: 0.8rem; font-weight: 700; color: #0369a1;">Boys: <b style="font-size:1.2rem; color: #0ea5e9;"><?= $pulse_sum['hostel_male'] ?? 0 ?></b></span>
+                                <span style="font-size: 0.8rem; font-weight: 700; color: #0369a1;">Girls: <b style="font-size:1.2rem; color: #0ea5e9;"><?= $pulse_sum['hostel_female'] ?? 0 ?></b></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="pulse-overall-view">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px;">
                             <?php
@@ -277,7 +275,7 @@ require_login();
                             
                             $target_depts = [
                                 'B.E CSE', 'B.E MECHANICAL', 'B.E ECE', 'B.E CIVIL', 'B.E EEE', 
-                                'B.Tech IT', 'B.Tech AI&DS', 'M.E Structural Engineering'
+                                'B.Tech IT', 'B.Tech AI&DS', 'M.E Structural Engineering', 'M.E Manufacturing Engineering'
                             ];
                             
                             foreach($target_depts as $dept):

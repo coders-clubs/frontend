@@ -39,9 +39,9 @@ if (!isset($_SESSION['selected_center'])) {
         <!-- Elite Search Bar -->
         <div class="search-panel no-print" style="margin-bottom: 40px; padding: 30px; background: #f1f5f9; border-radius: 24px; border: 1px solid #e2e8f0;">
             <div style="flex: 1;">
-                <label style="font-weight: 800; color: var(--brand-navy); font-size: 0.7rem; letter-spacing: 1px;">DATABASE QUERY: RECEIPT NO</label>
+                <label style="font-weight: 800; color: var(--brand-navy); font-size: 0.7rem; letter-spacing: 1px;">Fetch Data</label>
                 <div style="display: flex; gap: 15px; margin-top: 10px;">
-                    <input type="text" id="search_receipt" placeholder="ENTER NS-XXXXX" style="flex: 1; font-weight: 800; letter-spacing: 2px;">
+                    <input type="text" id="search_receipt" placeholder="ENTER Name (or) Phone no (or) DOB (or) Receipt no" style="flex: 1; font-weight: 800; letter-spacing: 2px;">
                     <button type="button" class="btn-designer btn-primary-designer" onclick="fetchAdvancedRecord()">SCAN & SYNC</button>
                 </div>
             </div>
@@ -60,13 +60,20 @@ if (!isset($_SESSION['selected_center'])) {
                             <div class="field-box">
                                 <label>Admission Type</label>
                                 <div style="display:flex; gap:20px; padding: 10px; <?= !is_admin() ? 'pointer-events: none; opacity: 0.7;' : '' ?>">
-                                    <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Regular" checked> Fresh Entry</label>
-                                    <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Lateral"> Lateral Entry</label>
+                                    <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Regular" checked> Fresh</label>
+                                    <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="Lateral"> Lateral</label>
+                                    <label style="font-size:0.8rem;"><input type="radio" name="admission_type" value="PG"> PG</label>
                                 </div>
                             </div>
                             <div class="field-box">
-                                <label>Receipt No</label>
-                                <input type="text" name="receipt_no" id="receipt_no" readonly style="font-weight:800; color:var(--brand-navy);">
+                                <label>Record Type & Receipt No</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <select name="record_type" id="record_type" style="flex: 1;">
+                                        <option value="Application">Application</option>
+                                        <option value="Enquiry">Enquiry</option>
+                                    </select>
+                                    <input type="text" name="receipt_no" id="receipt_no" readonly style="flex: 1; font-weight:800; color:var(--brand-navy);">
+                                </div>
                             </div>
                         </div>
                         <div class="input-row">
@@ -97,13 +104,55 @@ if (!isset($_SESSION['selected_center'])) {
                                 <input type="date" name="date_of_birth" id="date_of_birth" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                             </div>
                             <div class="field-box">
+                                <label>Exam No. (Reg No)</label>
+                                <input type="text" name="exam_no" id="exam_no" oninput="this.value = this.value.toUpperCase();">
+                            </div>
+                            <div class="field-box">
                                 <label>Gender</label>
                                 <select name="gender" id="gender" <?= !is_admin() ? 'style="pointer-events: none; background: #f1f5f9;"' : '' ?>><option value="Male">Male</option><option value="Female">Female</option></select>
                             </div>
                         </div>
-                        <div class="field-box" style="margin-bottom:20px;">
-                            <label>Father's Name</label>
-                            <input type="text" name="father_name" id="father_name">
+                        <div class="input-row">
+                            <div class="field-box">
+                                <label>Father's Name</label>
+                                <input type="text" name="father_name" id="father_name">
+                            </div>
+                            <div class="field-box">
+                                <label>Mother's Name</label>
+                                <input type="text" name="mother_name" id="mother_name">
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="field-box">
+                                <label>Father's Occupation</label>
+                                <input type="text" name="father_occupation" id="father_occupation">
+                            </div>
+                            <div class="field-box">
+                                <label>Mother's Occupation</label>
+                                <input type="text" name="mother_occupation" id="mother_occupation">
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="field-box">
+                                <label>Religion</label>
+                                <select name="religion" id="religion">
+                                    <option value="">Select</option>
+                                    <option value="Hindu">Hindu</option>
+                                    <option value="Muslim">Muslim</option>
+                                    <option value="Christian">Christian</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="field-box">
+                                <label>Community</label>
+                                <select name="community" id="community">
+                                    <option value="">Select</option>
+                                    <option value="OC">OC</option>
+                                    <option value="BC">BC</option>
+                                    <option value="MBC/DNC">MBC/DNC</option>
+                                    <option value="SC/ST">SC/ST</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="input-row">
                             <div class="field-box">
@@ -120,8 +169,12 @@ if (!isset($_SESSION['selected_center'])) {
                             <textarea name="address" id="address" rows="2"></textarea>
                         </div>
                         <div class="input-row">
-                            <div class="field-box"><label>Place</label><input type="text" name="place" id="place"></div>
-                            <div class="field-box"><label>Cell / Mobile</label><input type="text" name="cell_1" id="cell_1"></div>
+                            <div class="field-box"><label>City / Place</label><input type="text" name="city" id="city"></div>
+                            <div class="field-box"><label>Pincode</label><input type="text" name="pincode" id="pincode"></div>
+                        </div>
+                        <div class="input-row">
+                            <div class="field-box"><label>Cell 1 (Primary)</label><input type="text" name="cell_1" id="cell_1"></div>
+                            <div class="field-box"><label>Cell 2</label><input type="text" name="cell_2" id="cell_2"></div>
                         </div>
                     </div>
                  </div>
@@ -131,6 +184,10 @@ if (!isset($_SESSION['selected_center'])) {
                     <div class="section-wrapper">
                         <div class="section-label"><div class="section-number">03</div><div class="section-title">Academic & Marks</div></div>
                         <div class="input-row">
+                            <div class="field-box">
+                                <label>Application No</label>
+                                <input type="text" name="application_no" id="application_no" readonly style="background: #f1f5f9; cursor: not-allowed;">
+                            </div>
                             <div class="field-box">
                                 <label>Department</label>
                                 <input type="text" name="department" id="department" readonly>
@@ -169,6 +226,7 @@ if (!isset($_SESSION['selected_center'])) {
                         <div class="section-label"><div class="section-number">04</div><div class="section-title">Others & Fees</div></div>
                         <div class="input-row">
                             <div class="field-box"><label>School Name</label><input type="text" name="school_name" id="school_name"></div>
+                            <div class="field-box"><label>Place of School</label><input type="text" name="place_of_school" id="place_of_school"></div>
                             <div class="field-box"><label>Percentage (%)</label><input type="text" name="percentage" id="percentage"></div>
                         </div>
                         <div class="input-row">
@@ -181,8 +239,22 @@ if (!isset($_SESSION['selected_center'])) {
                                 <input type="text" name="quota" id="quota" <?= !is_admin() ? 'readonly' : '' ?> style="<?= !is_admin() ? 'background: #f1f5f9; cursor: not-allowed;' : '' ?>">
                             </div>
                             <div class="field-box">
+                                <label>7.5% Scheme</label>
+                                <select name="scheme_7_5" id="scheme_7_5"><option value="No">No</option><option value="Yes">Yes</option></select>
+                            </div>
+                            <div class="field-box">
                                 <label>Uravinmurai Letter</label>
                                 <select name="uravinmurai_letter" id="uravinmurai_letter" <?= !is_admin() ? 'style="pointer-events: none; background: #f1f5f9;"' : '' ?>><option value="No">No</option><option value="Yes">Yes</option></select>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="field-box">
+                                <label>Date of Joining</label>
+                                <input type="date" name="date_of_joining" id="date_of_joining">
+                            </div>
+                            <div class="field-box">
+                                <label>Hostel</label>
+                                <select name="hostel" id="hostel"><option value="No">No</option><option value="Yes">Yes</option></select>
                             </div>
                         </div>
                         <div class="input-row">
@@ -191,8 +263,8 @@ if (!isset($_SESSION['selected_center'])) {
                                 <input type="text" name="bus_stop" id="bus_stop">
                             </div>
                             <div class="field-box">
-                                <label>Hostel</label>
-                                <select name="hostel" id="hostel"><option value="No">No</option><option value="Yes">Yes</option></select>
+                                <label>Bus Route No</label>
+                                <input type="text" name="bus_route_no" id="bus_route_no">
                             </div>
                         </div>
                          <div class="input-row" id="payment_row">
@@ -217,7 +289,10 @@ if (!isset($_SESSION['selected_center'])) {
                                 <label style="font-size: 0.6rem;">Scan to Pay</label>
                                 <img src="assets/image.png" alt="Payment QR" style="height: 180px; border: 5px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px;">
                             </div>
-
+                            <div class="field-box" style="flex: 1;">
+                                <label>Transaction ID</label>
+                                <input type="text" name="transaction_id" id="transaction_id" placeholder="UPI / UTR">
+                            </div>
                         </div>
                     </div>
                  </div>
@@ -276,12 +351,18 @@ if (!isset($_SESSION['selected_center'])) {
         fetch(`core/admission_fetch.php?search=${receipt}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success') {
+                if (data.status === 'multiple') {
+                    let msg = "Multiple records found. Please search again using the exact Receipt No from these options:\n\n";
+                    data.records.forEach(r => {
+                        msg += `- ${r.receipt_no} : ${r.student_name} (${r.department || 'N/A'})\n`;
+                    });
+                    alert(msg);
+                } else if(data.status === 'success') {
                     const r = data.record;
                     const marks = data.marks || [];
                     
                     document.getElementById('advanced_id').value = r.id;
-                    const fields = ['receipt_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'caste', 'state', 'address', 'place', 'cell_1', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop', 'cutoff'];
+                    const fields = ['receipt_no', 'application_no', 'student_name', 'date_of_birth', 'gender', 'father_name', 'mother_name', 'father_occupation', 'mother_occupation', 'religion', 'community', 'caste', 'state', 'address', 'city', 'pincode', 'cell_1', 'cell_2', 'department', 'school_name', 'percentage', 'reference', 'reference_name', 'hostel', 'bus_route_no', 'date_of_joining', 'uravinmurai_letter', 'fees_name', 'amount', 'bill_type', 'reg_no', 'receipt_date', 'concession', 'degree', 'quota', 'bus_stop', 'cutoff', 'record_type', 'transaction_id', 'scheme_7_5', 'place_of_school', 'exam_no'];
                     fields.forEach(f => {
                          const el = document.getElementById(f);
                          if(el) el.value = r[f] || '';

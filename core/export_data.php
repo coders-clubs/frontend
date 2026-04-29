@@ -7,7 +7,7 @@ $endDate = $_GET['endDate'] ?? '';
 $center = $_GET['center'] ?? 'all';
 $faculty = $_GET['faculty'] ?? 'all';
 
-$query = "SELECT a.receipt_no, a.student_name, a.department, a.center, u.name as staff_name, a.date_of_joining, a.created_at 
+$query = "SELECT a.receipt_no, a.student_name, a.department, COALESCE(a.record_type, 'Application') as record_type, a.center, u.name as staff_name, a.date_of_joining, a.created_at 
           FROM admissions a 
           LEFT JOIN users u ON a.faculty_email = u.email 
           WHERE 1=1";
@@ -50,7 +50,7 @@ header('Content-Disposition: attachment; filename=' . $filename);
 $output = fopen('php://output', 'w');
 
 // Professional Headers
-fputcsv($output, ['RECEIPT NO', 'STUDENT NAME', 'DEPARTMENT', 'ADMISSION CENTER', 'REGISTERED BY', 'DATE OF JOINING', 'REGISRATION DATE']);
+fputcsv($output, ['RECEIPT NO', 'STUDENT NAME', 'DEPARTMENT', 'RECORD TYPE', 'ADMISSION CENTER', 'REGISTERED BY', 'DATE OF JOINING', 'REGISRATION DATE']);
 
 // Data
 foreach ($records as $row) {
